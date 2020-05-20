@@ -2,6 +2,7 @@
 // Node.js app and the Cordova app.
 const cordova = require('cordova-bridge')
 const express = require('express')
+const { ExpressPeerServer } = require('peer')
 const port = 3000
 
 // Send a message to Cordova.
@@ -19,10 +20,13 @@ try {
   cordova.channel.send('Express: Create route')
   app.get('/', (req, res) => res.send('Hello World!'))
   cordova.channel.send('Express: Listen')
-  app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
-    cordova.channel.send(`Example app listening at http://localhost:${port}`)
+  const server = app.listen(port, () => {
+    cordova.channel.send(`App listening at http://0.0.0.0:${port}`)
   })
+  const peerServer = ExpressPeerServer(server, {
+    debug: true
+  })
+  app.use('/peerjs', peerServer)
 } catch (error) {
   cordova.channel.send('Error starting Express')
   cordova.channel.send(JSON.stringify(error))

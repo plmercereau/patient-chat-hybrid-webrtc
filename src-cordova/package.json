@@ -15,8 +15,12 @@
   "dependencies": {
     "cordova-android": "^8.1.0",
     "cordova-custom-config": "^5.1.0",
+    "cordova-plugin-add-swift-support": "^2.0.2",
     "cordova-plugin-android-permissions": "^1.0.2",
+    "cordova-plugin-android-wifi-manager": "^1.2.1",
     "cordova-plugin-console": "^1.1.0",
+    "cordova-plugin-device": "^2.0.3",
+    "cordova-plugin-zeroconf": "^1.4.2",
     "nodejs-mobile-cordova": "^0.4.0"
   },
   "devDependencies": {
@@ -28,7 +32,10 @@
       "cordova-custom-config": {},
       "cordova-plugin-android-permissions": {},
       "nodejs-mobile-cordova": {},
-      "cordova-plugin-console": {}
+      "cordova-plugin-console": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-android-wifi-manager": {},
+      "cordova-plugin-zeroconf": {}
     },
     "platforms": [
       "android"

@@ -1,14 +1,17 @@
 <template lang="pug">
   q-page.row.items-center.justify-evenly
+    div.col-12
+      a(:href="serverUrl.value") {{ serverUrl.value }}
     example-component(title='Example component' active :todos='todos' :meta='meta')
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-
+import zeroConfPlugin from 'components/zeroconf-plugin'
+import { startNodeProject } from 'components/nodejs-plugin'
 import ExampleComponent from 'components/CompositionComponent.vue'
 import { Todo, Meta } from 'components/models'
-declare const nodejs: any // TODO
+import { ref } from '@vue/composition-api'
 
 export default Vue.extend({
   name: 'PageIndex',
@@ -22,46 +25,25 @@ export default Vue.extend({
       {
         id: 2,
         content: 'ct2'
-      },
-      {
-        id: 3,
-        content: 'ct3'
-      },
-      {
-        id: 4,
-        content: 'ct4'
-      },
-      {
-        id: 5,
-        content: 'ct5'
       }
     ]
     const meta: Meta = {
       totalCount: 1200
     }
 
-    function channelListener(msg: any) {
-      console.log('[cordova] received: ' + msg)
-      console.log(JSON.stringify(msg))
-    }
+    const serverUrl = ref<string>()
 
-    function startupCallback(err: any) {
-      if (err) {
-        console.log(err)
-      } else {
-        console.log('Node.js Mobile Engine Started')
-        nodejs.channel.send('Hello from Cordova!')
+    zeroConfPlugin.getHostname(
+      hostname => {
+        startNodeProject()
+        serverUrl.value = `http://${hostname}:3000`
+      },
+      (error: unknown) => {
+        console.log('Impossible to get hostname')
+        console.log(error)
       }
-    }
-
-    function startNodeProject() {
-      nodejs.channel.setListener(channelListener)
-      nodejs.start('main.js', startupCallback)
-      // To disable the stdout/stderr redirection to the Android logcat:
-      // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });
-    }
-    startNodeProject()
-    return { todos, meta }
+    )
+    return { todos, meta, serverUrl }
   }
 })
 </script>

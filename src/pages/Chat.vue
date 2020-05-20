@@ -26,12 +26,7 @@
 <script lang="ts">
 import permissionsPlugin from 'components/permissions-plugin'
 
-interface Window extends globalThis.Window {
-  device?: any
-}
-declare const window: Window
-
-import { defineComponent, ref, computed } from '@vue/composition-api'
+import { defineComponent, ref } from '@vue/composition-api'
 import Peer from 'peerjs'
 import { Platform } from 'quasar'
 
@@ -42,7 +37,15 @@ export default defineComponent({
     const peerId = ref<string>('')
     const localStream = ref<MediaStream>(new MediaStream())
     const peerStream = ref<MediaStream>(new MediaStream())
-    const peer = new Peer()
+    // TODO get host/port from the express server
+    // TODO get/set another id...
+    const peer = new Peer('somestupidid', {
+      host: 'localhost',
+      port: 3000,
+      path: '/peerjs',
+      secure: false
+    })
+
     let callConnection: Peer.MediaConnection
 
     const calling = ref<boolean>(false)
@@ -134,12 +137,6 @@ export default defineComponent({
       setLocalStream()
     }
 
-    const imei = computed(() => {
-      return window.device === void 0
-        ? 'Run this on a mobile/tablet device'
-        : JSON.stringify(window.device)
-    })
-
     return {
       localId,
       peerId,
@@ -147,7 +144,6 @@ export default defineComponent({
       peerStream,
       call,
       endCall,
-      imei,
       calling
     }
   }
