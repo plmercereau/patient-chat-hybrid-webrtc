@@ -1,38 +1,31 @@
 <template lang="pug">
   q-page.q-pa-md
-    div IMEI..: {{imei}}
-    div.row
-      div.col-2 Your Id
-      div.col-6 {{localId}}
-    div.row
-      div.col-2 Peer Id
-      q-input.col-2(v-model="peerId")
-      q-btn.col-2(@click="call") call
-    div.row
-      div.col-8
-        video(:srcObject.prop="peerStream"
-          autoplay="autoplay",
-          class="center-block")
-        div peer
-      div.col-4
-        video(:srcObject.prop="localStream"
-          autoplay="autoplay",
-          muted="true"
-          class="center-block")
-        div you
+    div.row.justify-center.items-start.q-gutter-md
+      q-card
+        q-card-section.row
+          q-input.col-5(v-model="localId" name="localId" color="primary" label="Your ID"  filled readonly)
+          q-input.col-5(v-model="peerId" name="peerId" color="primary" label="Peer ID" clearable filled :readonly="calling")
+          div.col-2(v-if="calling") Ongoing call
+          q-btn.col-2(v-if="!calling" @click="call") call
+          q-btn.col-2(v-if="calling" @click="endCall") End call
+      q-card.col-12
+        video(v-if="calling" :srcObject.prop="peerStream"
+          autoplay="autoplay")
+        video(v-else :srcObject.prop="localStream" muted="true"
+          autoplay="autoplay")
+        q-card-section
+          div.text-h6(v-if="calling") {{peerId}}
+          div.text-h6(v-else) You
+      q-card.col-2(v-if="calling")
+        video(:srcObject.prop="localStream" muted="true"
+          autoplay="autoplay")
+        q-card-section.text-h6 You
+
 </template>
 
 <script lang="ts">
-// interface Navigator extends globalThis.Navigator {
-//   mediaDevices: {
-//     getUserMedia: (
-//       constraints: MediaStreamConstraints,
-//       successCallback: NavigatorUserMediaSuccessCallback,
-//       errorCallback: NavigatorUserMediaErrorCallback
-//     ) => void
-//   }
-// }
-// declare const navigator: Navigator
+import permissionsPlugin from 'components/permissions-plugin'
+
 interface Window extends globalThis.Window {
   device?: any
 }
@@ -40,6 +33,7 @@ declare const window: Window
 
 import { defineComponent, ref, computed } from '@vue/composition-api'
 import Peer from 'peerjs'
+import { Platform } from 'quasar'
 
 export default defineComponent({
   name: 'PageChat',
@@ -48,8 +42,10 @@ export default defineComponent({
     const peerId = ref<string>('')
     const localStream = ref<MediaStream>(new MediaStream())
     const peerStream = ref<MediaStream>(new MediaStream())
-
     const peer = new Peer()
+    let callConnection: Peer.MediaConnection
+
+    const calling = ref<boolean>(false)
     peer.on('open', function() {
       console.log('open')
       localId.value = peer.id
@@ -64,8 +60,23 @@ export default defineComponent({
       console.error('An error ocurred with peer: ' + err)
     })
 
+    const setCall = (call: Peer.MediaConnection): void => {
+      callConnection = call
+
+      callConnection.on('stream', function(stream) {
+        peerStream.value = stream
+        calling.value = true
+      })
+      // Handle when the call finishes
+      callConnection.on('close', function() {
+        alert('The videocall has finished')
+        calling.value = false
+        peerId.value = ''
+      })
+    }
+
     peer.on('call', function(call) {
-      console.log('call')
+      console.log('on call')
       // var acceptsCall = confirm(
       //   'Videocall incoming, do you want to accept it ?'
       // )
@@ -73,17 +84,8 @@ export default defineComponent({
       if (acceptsCall) {
         // Answer the call with your own video/audio stream
         call.answer(localStream.value)
-
-        // Receive data
-        call.on('stream', function(stream) {
-          peerStream.value = stream
-        })
-
-        // Handle when the call finishes
-        call.on('close', function() {
-          alert('The videocall has finished')
-        })
-
+        peerId.value = call.peer
+        setCall(call)
         // use call.close() to finish a call
       } else {
         console.log('Call denied !')
@@ -92,44 +94,44 @@ export default defineComponent({
 
     const call = () => {
       console.log('call')
-      const callAction = peer.call(peerId.value, localStream.value)
-      callAction.on('stream', function(stream) {
-        peerStream.value = stream
-      })
+      setCall(peer.call(peerId.value, localStream.value))
     }
 
-    if (navigator.mediaDevices) {
-      console.log('MEDIA DEVICES')
-      console.log(Object.entries(navigator))
-      console.info('TRY TRY TRY ===========================')
-      navigator.mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: {
-            facingMode: 'environment' //'user'
-          }
-        })
-        .then(media => {
-          console.log('yeeha --------------!----------')
-          //         const mediaControl = document.querySelector('video');
-          // mediaControl.srcObject = mediaStream;
-          // mediaControl.src = URL.createObjectURL(mediaStream);
-          localStream.value = media
-        })
-    } else if (navigator.getUserMedia) {
-      console.log('GET USER MEDIA')
-      navigator.getUserMedia(
-        { audio: true, video: true },
-        function(stream) {
-          console.log('HERE')
-          // localStream.value = stream
-          // onReceiveStream(stream, 'my-camera')
-        },
-        function(err) {
-          alert('Cannot get access to your camera and video !')
-          console.error(err)
-        }
+    const endCall = () => {
+      console.log('end call')
+      callConnection.close()
+      calling.value = false
+    }
+
+    const setLocalStream = () => {
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices
+          .getUserMedia({
+            audio: true,
+            video: {
+              facingMode: 'user' // 'environment'
+            }
+          })
+          .then(media => {
+            localStream.value = media
+          })
+      }
+    }
+    if (Platform.is.cordova) {
+      const perms = [
+        permissionsPlugin.MODIFY_AUDIO_SETTINGS,
+        permissionsPlugin.RECORD_AUDIO,
+        permissionsPlugin.CAPTURE_AUDIO_OUTPUT,
+        permissionsPlugin.CAMERA
+      ]
+
+      permissionsPlugin.requestPermission(
+        perms,
+        () => setLocalStream(),
+        () => console.log('FUNCKING NIGHTMARE')
       )
+    } else {
+      setLocalStream()
     }
 
     const imei = computed(() => {
@@ -137,8 +139,24 @@ export default defineComponent({
         ? 'Run this on a mobile/tablet device'
         : JSON.stringify(window.device)
     })
-    // localStream.value = media
-    return { localId, peerId, localStream, peerStream, call, imei }
+
+    return {
+      localId,
+      peerId,
+      localStream,
+      peerStream,
+      call,
+      endCall,
+      imei,
+      calling
+    }
   }
 })
 </script>
+<style scoped>
+video {
+  /* override other styles to make responsive */
+  width: 100% !important;
+  height: auto !important;
+}
+</style>
