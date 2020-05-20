@@ -8,6 +8,7 @@ import Vue from 'vue'
 
 import ExampleComponent from 'components/CompositionComponent.vue'
 import { Todo, Meta } from 'components/models'
+declare const nodejs: any // TODO
 
 export default Vue.extend({
   name: 'PageIndex',
@@ -38,6 +39,23 @@ export default Vue.extend({
     const meta: Meta = {
       totalCount: 1200
     }
+
+    function startupCallback(err: any) {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log('Node.js Mobile Engine Started')
+        nodejs.channel.send('Hello from Cordova!')
+      }
+    }
+
+    function startNodeProject() {
+      // nodejs.channel.setListener(channelListener)
+      nodejs.start('main.js', startupCallback)
+      // To disable the stdout/stderr redirection to the Android logcat:
+      // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });
+    }
+    startNodeProject()
     return { todos, meta }
   }
 })

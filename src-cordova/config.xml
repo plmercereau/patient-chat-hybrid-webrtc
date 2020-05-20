@@ -25,7 +25,7 @@
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <uses-permission android:name="android.permission.VIDEO_CAPTURE" />
             <uses-permission android:name="android.permission.AUDIO_CAPTURE" />
-            <uses-feature android:name="android.hardware.camera" android:required="true"/>
+            <uses-feature android:name="android.hardware.camera" android:required="true" />
             <uses-feature android:name="android.hardware.camera.autofocus" />
         </custom-config-file>
         <custom-config-file parent="./application" target="AndroidManifest.xml">
@@ -37,4 +37,5 @@
         <allow-intent href="itms-apps:*" />
     </platform>
     <allow-navigation href="about:*" />
+    <resource-file src="../node" target="www/nodejs-project" />
 </widget>
