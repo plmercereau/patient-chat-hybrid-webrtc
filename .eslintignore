@@ -2,3 +2,5 @@
 /src-bex/www
 /src-cordova
 node_modules
+/temp
+/server

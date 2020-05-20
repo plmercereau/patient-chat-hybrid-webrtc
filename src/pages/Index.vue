@@ -40,6 +40,11 @@ export default Vue.extend({
       totalCount: 1200
     }
 
+    function channelListener(msg: any) {
+      console.log('[cordova] received: ' + msg)
+      console.log(JSON.stringify(msg))
+    }
+
     function startupCallback(err: any) {
       if (err) {
         console.log(err)
@@ -50,7 +55,7 @@ export default Vue.extend({
     }
 
     function startNodeProject() {
-      // nodejs.channel.setListener(channelListener)
+      nodejs.channel.setListener(channelListener)
       nodejs.start('main.js', startupCallback)
       // To disable the stdout/stderr redirection to the Android logcat:
       // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });

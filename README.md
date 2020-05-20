@@ -10,8 +10,10 @@ yarn
 
 ### Android
 
+TODO: Put the following tasks into Corvova hooks.
+
 - [Steps to patch the cordova-nodejs-module](https://github.com/JaneaSystems/nodejs-mobile/issues/239)
-- `ln -s node src-cordova/www/nodejs-project`
+- `cd src-cordova/www && ln -sFf ../../server nodejs-project`
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 
