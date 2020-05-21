@@ -1,9 +1,8 @@
 // Require the 'cordova-bridge' to enable communications between the
 // Node.js app and the Cordova app.
 const cordova = require('cordova-bridge')
-const express = require('express')
-const { ExpressPeerServer } = require('peer')
-const port = 3000
+const log = require('./log')
+const server = require('./server')
 
 // Send a message to Cordova.
 cordova.channel.send('main.js loaded')
@@ -15,21 +14,11 @@ cordova.channel.post('started')
 cordova.channel.post('started', 'main.js loaded')
 
 try {
-  cordova.channel.send('Create Express')
-  const app = express()
-  cordova.channel.send('Express: Create route')
-  app.get('/', (req, res) => res.send('Hello World!'))
-  cordova.channel.send('Express: Listen')
-  const server = app.listen(port, () => {
-    cordova.channel.send(`App listening at http://0.0.0.0:${port}`)
-  })
-  const peerServer = ExpressPeerServer(server, {
-    debug: true
-  })
-  app.use('/peerjs', peerServer)
+  server()
+  log('Express server set.')
 } catch (error) {
-  cordova.channel.send('Error starting Express')
-  cordova.channel.send(JSON.stringify(error))
+  log('Error starting Express')
+  log(error)
 }
 
 // A sample object to show how the channel supports generic
@@ -43,25 +32,26 @@ class Reply {
 
 // Listen to messages from Cordova.
 cordova.channel.on('message', msg => {
-  console.log('[node] MESSAGE received: "%s"', msg)
+  log('MESSAGE received: "%s"', msg)
   // Reply sending a user defined object.
   cordova.channel.send(new Reply('Message received!', msg))
 })
 
 // Listen to event 'myevent' from Cordova.
-cordova.channel.on('myevent', msg => {
-  console.log('[node] MYEVENT received with message: "%s"', msg)
+cordova.channel.on('express', msg => {
+  log('MYEVENT received with message: "%s"', msg)
 })
 
 // Handle the 'pause' and 'resume' events.
 // These are events raised automatically when the app switched to the
 // background/foreground.
 cordova.app.on('pause', pauseLock => {
-  console.log('[node] app paused.')
+  log('app paused.')
   pauseLock.release()
+  log('SO WHAT????')
 })
 
 cordova.app.on('resume', () => {
-  console.log('[node] app resumed.')
+  log('app resumed.')
   cordova.channel.post('engine', 'resumed')
 })

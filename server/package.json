@@ -4,6 +4,7 @@
   "description": "Node.js for Mobile Apps sample project",
   "main": "main.js",
   "scripts": {
+    "dev": "nodemon start.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Janea Systems Inc.",
@@ -11,5 +12,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "peer": "^0.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }

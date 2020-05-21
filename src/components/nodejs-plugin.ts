@@ -23,8 +23,10 @@ function startupCallback(err: unknown) {
 }
 
 export function startNodeProject() {
-  nodejs.channel.setListener(channelListener)
-  nodejs.start('main.js', startupCallback)
-  // To disable the stdout/stderr redirection to the Android logcat:
-  // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });
+  if (nodejs) {
+    nodejs.channel.setListener(channelListener)
+    nodejs.start('main.js', startupCallback)
+    // To disable the stdout/stderr redirection to the Android logcat:
+    // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });
+  }
 }

@@ -37,12 +37,13 @@ export default defineComponent({
     const peerId = ref<string>('')
     const localStream = ref<MediaStream>(new MediaStream())
     const peerStream = ref<MediaStream>(new MediaStream())
-    // TODO get host/port from the express server
     // TODO get/set other ids...
     const peer = new Peer({
-      host: 'localhost',
-      port: 3000,
-      path: '/peerjs',
+      host: window.location.hostname,
+      port:
+        process.env.NODE_ENV === 'development'
+          ? 3000
+          : parseInt(window.location.port),
       secure: false
     })
 
