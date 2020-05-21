@@ -53,6 +53,28 @@ cp -R dist src-cordova/www/client`
 
 ### Build android version
 
+## Architecture options
+
+In any case, the Android app embeds a TURN server (PeerJS) that acts as a WebRTC broker client
+
+### Android "server" + SPA "client
+
+The Express server embedded in the Android app serves a version of the static SPA app.
+
+- Pros
+  - no need to install anything on client side
+- Cons
+  - https is required to get `getMediaDevice()` working, and an SSL certificate can't be obtained without internet (e.g. Let's Encrypt). Only self-signed certificates are then possible, but will raise an alert on the client that the site is not secure, and will possibly still flag context as unsecure and therefore block video. It may then be a deal breaker.
+  - the client will need to enter the server path to start the application. It can be mitigated in setting a SR-code / SMS sending system to get the link, plus to install the client as a PWA
+
+### Android everywhere
+
+- Pros
+  - ability to self-discover available server(s) in the netword with zeroconf
+  -
+- Cons
+  - Should install the app everywhere. The need of internet to get access to the Google Playstore can be mitigated in serving the apk on the Express server for download. The link could be available on the client side through a QR code.
+
 ## TODO
 
 ### Top priorities
