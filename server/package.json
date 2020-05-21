@@ -11,7 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
-    "peer": "^0.5.3"
+    "peer": "^0.5.3",
+    "selfsigned": "^1.10.7"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
