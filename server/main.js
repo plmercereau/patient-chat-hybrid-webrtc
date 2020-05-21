@@ -7,15 +7,14 @@ const server = require('./server')
 // Send a message to Cordova.
 cordova.channel.send('main.js loaded')
 
-// Post an event to Cordova.
-cordova.channel.post('started')
-
 // Post an event with a message.
 cordova.channel.post('started', 'main.js loaded')
 
 try {
-  server()
-  log('Express server set.')
+  server(3000, () => {
+    cordova.channel.post('ready')
+    log('Express server set.')
+  })
 } catch (error) {
   log('Error starting Express')
   log(error)
@@ -32,15 +31,15 @@ class Reply {
 
 // Listen to messages from Cordova.
 cordova.channel.on('message', msg => {
-  log('MESSAGE received: "%s"', msg)
+  log(`MESSAGE received: ${msg}`)
   // Reply sending a user defined object.
-  cordova.channel.send(new Reply('Message received!', msg))
+  cordova.channel.send(new Reply('Message received!', JSON.stringify(msg)))
 })
 
 // Listen to event 'myevent' from Cordova.
-cordova.channel.on('express', msg => {
-  log('MYEVENT received with message: "%s"', msg)
-})
+// cordova.channel.on('express', msg => {
+//   log('MYEVENT received with message: "%s"', msg)
+// })
 
 // Handle the 'pause' and 'resume' events.
 // These are events raised automatically when the app switched to the
@@ -48,7 +47,6 @@ cordova.channel.on('express', msg => {
 cordova.app.on('pause', pauseLock => {
   log('app paused.')
   pauseLock.release()
-  log('SO WHAT????')
 })
 
 cordova.app.on('resume', () => {

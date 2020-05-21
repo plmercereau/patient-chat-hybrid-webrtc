@@ -3,7 +3,7 @@ import { Platform } from 'quasar'
 interface CordovaPlugins {
   zeroconf: ZeroConfPlugin
 }
-interface Service {
+export interface Service {
   domain: string
   type: string
   name: string
@@ -37,20 +37,20 @@ interface ZeroConfPlugin {
     domain: string,
     name: string,
     success: SuccessCallback,
-    failure: Function
+    failure?: Function
   ) => void
   stop: (successCallback: SuccessCallback, failureCallback?: Function) => void
   watch: (
     type: string,
     domain: string,
     success: (result: ServiceResult) => void,
-    failure: Function
+    failure?: Function
   ) => void
   unwatch: (
     type: string,
     domain: string,
     success: SuccessCallback,
-    failure: Function
+    failure?: Function
   ) => void
   close: (successCallback: SuccessCallback, failureCallback?: Function) => void
   reInit: (successCallback: SuccessCallback, failureCallback?: Function) => void

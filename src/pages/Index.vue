@@ -1,38 +1,78 @@
 <template lang="pug">
-  q-page.row.items-center.justify-evenly
-    div.col-12(v-if="serverUrl")
-      a(:href="serverUrl.value") {{ serverUrl.value }}
-    div Val: {{val}}
+  q-page
+    q-list(bordered separator)
+      q-item(v-for="service in servers" clickable v-ripple)
+        q-item-section {{service.name}}
+    div(v-if="apkUrl")
+      a(:href="apkUrl") {{ apkUrl }}
 </template>
 
 <script lang="ts">
-import zeroConfPlugin from 'components/zeroconf-plugin'
-import { startNodeProject } from 'components/nodejs-plugin'
-import { ref, defineComponent, onMounted } from '@vue/composition-api'
-import axios from 'axios'
+import { ref, defineComponent, onMounted, Ref } from '@vue/composition-api'
 import { Platform } from 'quasar'
+
+import zeroConfPlugin, { Service } from 'components/zeroconf-plugin'
+import { startNodeProject } from 'components/nodejs-plugin'
+
+const SERVICE_PORT = 3000
+
+const pushService = (services: Ref<Service[]>, service: Service) => {
+  if (service.port == SERVICE_PORT && service.name) {
+    if (
+      !services.value.some(
+        ({ name, domain, type, hostname }) =>
+          name === service.name &&
+          domain == service.domain &&
+          type === service.type &&
+          hostname === service.hostname
+      )
+    ) {
+      services.value = [...services.value, service] // TODO ugly
+    }
+  }
+}
+
 export default defineComponent({
   name: 'PageIndex',
   setup() {
-    const serverUrl = ref<string>()
-    const val = ref<string>()
+    const apkUrl = ref<string>()
 
-    onMounted(async () => {
-      try {
-        const result = await axios.get('/api/turn')
-        console.log(result.data)
-        val.value = JSON.stringify(result.data)
-      } catch (error) {
-        console.warn(error)
-      }
-    })
-
+    const servers = ref<Service[]>([])
     onMounted(() => {
-      if (Platform.is.cordova) {
-        zeroConfPlugin?.getHostname(
+      if (Platform.is.cordova && zeroConfPlugin) {
+        zeroConfPlugin.getHostname(
           hostname => {
-            startNodeProject()
-            serverUrl.value = `http://${hostname}:3000`
+            startNodeProject(() => {
+              console.log('The Express server is ready!')
+              apkUrl.value = `http://${hostname}:3000/videochat.apk`
+              // TODO register only if server is activated
+              // TODO zeroConfPlugin.reInit, e.g. when network change?
+              zeroConfPlugin.register(
+                '_http._tcp.',
+                'local.',
+                hostname,
+                SERVICE_PORT,
+                {},
+                () => {
+                  console.log('Added service')
+                }
+              )
+              zeroConfPlugin.watch(
+                '_http._tcp.',
+                'local.',
+                ({ action, service }) => {
+                  pushService(servers, service)
+                  if (action === 'resolved') {
+                    console.log(`RESOLVED ${service.name}`)
+                  } else if (action === 'added') {
+                    console.log(`ADDED: ${service.name}`)
+                  }
+                },
+                () => {
+                  console.log('ERROR WATCHING THE SERVICES')
+                }
+              )
+            })
           },
           (error: unknown) => {
             console.log('Impossible to get hostname')
@@ -41,7 +81,7 @@ export default defineComponent({
         )
       }
     })
-    return { serverUrl, val }
+    return { apkUrl, servers }
   }
 })
 

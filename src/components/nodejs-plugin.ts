@@ -3,15 +3,16 @@ interface NodeJSPlugin {
   channel: {
     send: (message: string) => void
     setListener: (listener: (message: unknown) => void) => void
+    on: (event: string, callback: (message: unknown) => void) => void
+    post: (event: string, message: unknown) => void
   }
 }
 
 declare const nodejs: NodeJSPlugin
 
-function channelListener(msg: unknown) {
-  console.log('[cordova] received: ' + msg)
-  console.log(JSON.stringify(msg))
-}
+// function channelListener(msg: unknown) {
+//   console.log('[cordova] received: ' + JSON.stringify(msg))
+// }
 
 function startupCallback(err: unknown) {
   if (err) {
@@ -22,9 +23,14 @@ function startupCallback(err: unknown) {
   }
 }
 
-export function startNodeProject() {
+export function startNodeProject(
+  readyCallback = function() {
+    console.log('READY')
+  }
+) {
   if (nodejs) {
-    nodejs.channel.setListener(channelListener)
+    nodejs.channel.on('ready', readyCallback)
+    // nodejs.channel.setListener(channelListener)
     nodejs.start('main.js', startupCallback)
     // To disable the stdout/stderr redirection to the Android logcat:
     // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });
