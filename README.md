@@ -53,12 +53,29 @@ cp -R dist src-cordova/www/client`
 
 ### Build android version
 
-## Challenges
+## TODO
+
+### Top priorities
+
+- SSL / unable to run video in insecure contexts
+  - Temporary workaround: whitelist http://<hostname>:3000 by opening chrome://flags and search for unsafely-treat-insecure-origin-as-secure
+  - check if a self-signed certificate would work
+    1. https://github.com/jfromaniello/selfsigned#readme
+    2. https://github.com/JaneaSystems/nodejs-mobile/issues/165
+    3. https://flaviocopes.com/express-https-self-signed-certificate/
+  - https://w3c.github.io/webappsec-secure-contexts/
+  - https://medium.com/@bramus/on-secure-contexts-in-firefox-https-for-local-development-and-a-potential-nice-gesture-by-cea4ab4903a
+  - Let's encrypt would require an internet connection
+
+### Other
 
 - let the Android app set a Wifi hotspot
-- captive portal
+- serve the SPA through a captive portal (may require root access)
 - change the device hostname (may require root access)
 - change the express server port to 80 (requires root access)
-- SSL?
 - find a way to use mDNS/zeroconf service in the browser
-- Double check if server works correclty in background. [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
+- Double check if server works correclty in background. Seems ok.
+  - [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
+- send the server url by SMS
+- print the server url on a QR code
+- publish to the app store

@@ -30,6 +30,19 @@ import { defineComponent, ref } from '@vue/composition-api'
 import Peer from 'peerjs'
 import { Platform } from 'quasar'
 
+const getPeerConfig = () => {
+  let host = 'localhost'
+  let port = 3000
+  if (!Platform.is.cordova) {
+    host = window.location.hostname
+    port =
+      process.env.NODE_ENV === 'development'
+        ? 3000
+        : parseInt(window.location.port)
+  }
+  return { host, port, secure: false }
+}
+
 export default defineComponent({
   name: 'PageChat',
   setup() {
@@ -38,14 +51,7 @@ export default defineComponent({
     const localStream = ref<MediaStream>(new MediaStream())
     const peerStream = ref<MediaStream>(new MediaStream())
     // TODO get/set other ids...
-    const peer = new Peer({
-      host: window.location.hostname,
-      port:
-        process.env.NODE_ENV === 'development'
-          ? 3000
-          : parseInt(window.location.port),
-      secure: false
-    })
+    const peer = new Peer(getPeerConfig())
 
     let callConnection: Peer.MediaConnection
 
