@@ -5,5 +5,6 @@ export const getters: GetterTree<State, {}> = {
   peerjs: state => state.server,
   url: ({ server }) =>
     server &&
-    `${server.secure ? 'https' : 'http'}://${server.host}:${server.port}`
+    `${server.secure ? 'https' : 'http'}://${server.host}:${server.port}`,
+  servers: state => state.servers
 }

@@ -6,48 +6,66 @@ import {
   startServer,
   getHostname,
   register,
-  watch
+  watch,
+  SERVICE_NAME
 } from 'src/common'
+import { Platform } from 'quasar'
 
 export const actions: ActionTree<State, {}> = {
   load: {
     handler: async ({ dispatch, commit, state }) => {
       const hostname = await getHostname()
       commit('setHostname', hostname)
-      if (state.runServer) {
-        console.log('START SERVER') // TODO remove
-        await startServer()
-        try {
-          register('_http._tcp.', 'local.', hostname, SERVICE_PORT, {})
-        } catch (error) {
-          console.log('Impossible to register the service')
-        }
-      }
-      if (state.server) {
-        console.log(state.server)
-        console.log('INITIAL SERVER FOUND. CHECK IF UP') // TODO remove
-        if (!(await checkServer(state.server))) {
-          console.log('SERVER IS DOWN') // TODO remove
-          await dispatch('selectFirstUp')
-        }
+      if (state.server && (await checkServer(state.server))) {
+        console.log('INITIAL STATE SERVER FOUND') // TODO remove
+        console.log(state.server) // TODO remove
       } else {
-        console.log('NO INITIAL SERVER') // TODO remove
         await dispatch('selectFirstUp')
+        if (!state.server && !!Platform.is.cordova && state.runServer) {
+          await startServer()
+          commit('setServer', {
+            host: 'localhost',
+            port: SERVICE_PORT,
+            secure: false
+          })
+          try {
+            register('_http._tcp.', 'local.', hostname, SERVICE_PORT, {
+              name: SERVICE_NAME
+            })
+          } catch (error) {
+            console.log('Impossible to register the service')
+          }
+        }
       }
     }
   },
   selectFirstUp: {
+    // TODO review this
     handler: async ({ commit }) => {
-      console.log('LIST SERVERS') // TODO REMOVE
-      const list = await watch('_http._tcp', 'local.', 3000) // TODO remove!!
-      console.log(`SERVER LIST: ${JSON.stringify(list)}`) // TODO remove !!!
-      commit('setServer', { host: 'localhost', port: 3000, secure: false }) // TODO revoir
+      const list = await watch('_http._tcp.', 'local.') // TODO remove!!
+      // TODO select first one that actually answers to an health check
+      const server = { host: 'localhost', port: SERVICE_PORT, secure: false }
+      if (await checkServer(server)) {
+        console.log('SERVER IS UP!!!')
+        commit('setServer', server)
+      }
     }
   },
   listServers: {
-    handler: async () => {
-      console.log('LIST SERVERS') // TODO REMOVE
-      const list = await watch('_http._tcp', 'local.', 3000) // TODO TRANSFORM AND MUTATE
+    handler: async ({ state }) => {
+      console.log('LIST NDNS SERVERS') // TODO REMOVE
+      const list = await watch('_http._tcp.', 'local.', 20000) // TODO TRANSFORM AND MUTATE
+      state.servers = list // TODO commit list
+        .filter(
+          service =>
+            service.txtRecord.name === SERVICE_NAME &&
+            service.port === SERVICE_PORT
+        )
+        .map(service => ({
+          host: JSON.stringify(service),
+          port: service.port,
+          secure: false
+        }))
       console.log(`SERVER LIST: ${JSON.stringify(list)}`) // TODO remove
     }
   }

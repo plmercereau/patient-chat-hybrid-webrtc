@@ -1,5 +1,5 @@
-import { PeerServer } from '../../common'
-import { LocalStorage, Platform } from 'quasar'
+import { PeerServer } from 'src/common/types'
+// import { LocalStorage } from 'quasar'
 
 export interface State {
   server: PeerServer | null
@@ -10,9 +10,9 @@ export interface State {
 
 export default function(): State {
   return {
-    server: LocalStorage.getItem<PeerServer>('server'),
+    server: null, // LocalStorage.getItem<PeerServer>('server'),
     servers: [],
     hostname: null,
-    runServer: !!Platform.is.cordova // TODO set as a param as well
+    runServer: true // TODO set as a param as well
   }
 }

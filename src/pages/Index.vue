@@ -1,16 +1,17 @@
 <template lang="pug">
   q-page
     div host: {{server}}
+    q-btn(@click="refresh") Refresh
     q-list(bordered separator)
-      q-item(v-for="service in servers" clickable v-ripple)
-        q-item-section {{service.name}}
-    div(v-if="apkUrl")
-      a(:href="apkUrl") {{ apkUrl }}
+      q-item(v-for="service in servers" :key="service.host" clickable v-ripple)
+        q-item-section {{service}}
+    //- div(v-if="apkUrl")
+    //-   a(:href="apkUrl") {{ apkUrl }}
 </template>
 
 <script lang="ts">
 import { ref, defineComponent, computed } from '@vue/composition-api'
-import { Service } from 'src/common'
+// import { Service } from 'src/types'
 import { store } from 'src/store'
 
 export default defineComponent({
@@ -18,14 +19,11 @@ export default defineComponent({
   setup() {
     const apkUrl = ref<string>()
 
-    const servers = ref<Service[]>([])
+    const servers = computed(() => store.getters['chat/servers'])
+    const server = computed(() => store.getters['chat/peerjs'])
+    const refresh = async () => await store.dispatch('chat/listServers')
 
-    const server = computed(() => {
-      console.log(store.getters['server/peerjs'])
-      return store.getters['server/peerjs']
-    })
-
-    return { apkUrl, servers, server }
+    return { apkUrl, server, servers, refresh }
   }
 })
 </script>

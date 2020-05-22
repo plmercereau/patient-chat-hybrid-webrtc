@@ -2,26 +2,27 @@ import axios from 'axios'
 import { LocalStorage } from 'quasar'
 import { Ref } from '@vue/composition-api'
 
-import { Service } from './zeroconf'
+import { PeerServer, Service } from './types'
 
 export const SERVICE_PORT = 3000
 
-export interface PeerServer {
-  host: string
-  port: number
-  secure: boolean
-}
-
-export const checkServer = async ({ host, port, secure }: PeerServer) => {
+export const checkServer = async (server: PeerServer | null) => {
   // TODO timeout + multiple attempts
-  const protocol = secure ? 'https' : 'http'
+  if (!server) return false
+  const protocol = server.secure ? 'https' : 'http'
   try {
-    const result = await axios.get(`${protocol}://${host}:${port}/healthz`) // TODO health check
+    console.log(
+      `CHECK SERVER: ${protocol}://${server.host}:${server.port}/healthz`
+    )
+
+    const result = await axios.get(
+      `${protocol}://${server.host}:${server.port}/healthz`
+    ) // TODO health check
     if (result.status === 200) {
       console.log('CHECK SERVER OK') // TODO remove
       return true
     } else return false
-  } catch {
+  } catch (error) {
     console.log('CHECK SERVER: ERROR') // TODO remove
     return false
   }

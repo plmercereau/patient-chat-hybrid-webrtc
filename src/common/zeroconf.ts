@@ -1,17 +1,8 @@
 import { Platform } from 'quasar'
+import { Service } from './types'
 
 interface CordovaPlugins {
   zeroconf: ZeroConfPlugin
-}
-export interface Service {
-  domain: string
-  type: string
-  name: string
-  port: number
-  hostname: string
-  ipv4Addresses: string[]
-  ipv6Addresses: string[]
-  txtRecord: Record<string, string>
 }
 interface ServiceResult {
   action: string
@@ -19,6 +10,7 @@ interface ServiceResult {
 }
 type SuccessCallback = (success: string) => void
 interface ZeroConfPlugin {
+  registerAddressFamily: 'ipv4' | 'ipv6' | 'any'
   getHostname: (
     successCallback: SuccessCallback,
     failureCallback?: Function
@@ -55,18 +47,19 @@ interface ZeroConfPlugin {
   close: (successCallback: SuccessCallback, failureCallback?: Function) => void
   reInit: (successCallback: SuccessCallback, failureCallback?: Function) => void
 }
-const plugins = Platform.is.cordova
-  ? (cordova.plugins as CordovaPlugins)
+
+export const zeroconfPlugin = Platform.is.cordova
+  ? (cordova.plugins as CordovaPlugins).zeroconf
   : undefined
 
-export default plugins?.zeroconf
+if (zeroconfPlugin) zeroconfPlugin.registerAddressFamily = 'ipv4'
 
 export const getHostname = () =>
   new Promise<string>((resolve, reject) => {
-    if (!plugins?.zeroconf) resolve('localhost')
+    if (!zeroconfPlugin) resolve('localhost')
     // TODO other name when SPA? l
     else
-      plugins.zeroconf.getHostname(
+      zeroconfPlugin.getHostname(
         hostname => resolve(hostname),
         (error: unknown) => reject(error)
       )
@@ -80,10 +73,10 @@ export const register = (
   txtRecord: Record<string, string>
 ) =>
   new Promise<ServiceResult>((resolve, reject) => {
-    if (!plugins?.zeroconf)
+    if (!zeroconfPlugin)
       reject('Zeroconf service registration only works with Cordova.')
     else
-      plugins.zeroconf.register(
+      zeroconfPlugin.register(
         type,
         domain,
         name,
@@ -94,24 +87,28 @@ export const register = (
       )
   })
 
-export const watch = (type: string, domain: string, duration = 5000) =>
+export const watch = (type: string, domain: string, watchDuration = 3000) =>
   new Promise<Service[]>((resolve, reject) => {
     const result: Service[] = []
-    if (!plugins?.zeroconf) resolve([])
+    if (!zeroconfPlugin) resolve([])
     else {
+      console.log('TRY TO WATCH SERVICES....')
       setTimeout(() => {
-        plugins.zeroconf.unwatch(
+        console.log('UNWATCH ZEROCONF SERVICES')
+        zeroconfPlugin.unwatch(
           type,
           domain,
           () => resolve(result),
           (error: unknown) =>
             reject('Error unwatching the zeroconf services' + error)
         )
-      }, duration)
-      plugins.zeroconf.watch(
+      }, watchDuration)
+      console.log('WATCH ZEROCONF SERVICES')
+      zeroconfPlugin.watch(
         type,
         domain,
         res => {
+          console.log(`FOUND SERVICE: ${JSON.stringify(res)}`)
           result.push(res.service) // TODO filter
         },
         (error: unknown) =>
@@ -119,24 +116,3 @@ export const watch = (type: string, domain: string, duration = 5000) =>
       )
     }
   })
-
-// TODO See how it is possible to use mDNS:
-// zeroConfPlugin.register(
-//   '_http._tcp.',
-//   'local.',
-//   'poco',
-//   3000,
-//   {
-//     foo: 'bar'
-//   },
-//   function success(result) {
-//     const action = result.action // 'registered'
-//     const service = result.service
-//     console.log('BINGOOOOOOOOO')
-//     console.log(action)
-//     console.log(service)
-//   },
-//   (error: any) => {
-//     console.log('IMPOSSIBLE TO CREATE SERVICE')
-//   }
-// )

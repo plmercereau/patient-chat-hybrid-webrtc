@@ -1,7 +1,8 @@
 import { ref, Ref } from '@vue/composition-api'
 import Peer from 'peerjs'
 
-import { permissionsPlugin, PeerServer } from 'src/common'
+import { permissionsPlugin } from 'src/common'
+import { PeerServer } from 'src/common/types'
 
 const setLocalStream = (ls: Ref<MediaStream>) => {
   if (navigator.mediaDevices) {
