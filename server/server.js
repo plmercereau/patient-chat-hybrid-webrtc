@@ -1,4 +1,5 @@
 const express = require('express')
+var cors = require('cors')
 const path = require('path')
 const { ExpressPeerServer } = require('peer')
 const log = require('./log')
@@ -10,14 +11,18 @@ module.exports = function(
   }
 ) {
   const app = express()
-  app.use(express.static(path.join(__dirname, 'client')))
+  app.use(cors())
+  app.get('/healthz', (req, res) => res.status(200).send('OK'))
+
+  //   app.use(express.static(path.join(__dirname, 'client')))
   //   log('Static client middleware loaded.')
 
   const server = app.listen(port, listenCallback)
 
   const peerServer = ExpressPeerServer(server, {
     debug: true,
-    path: '/'
+    path: '/',
+    allow_discovery: true
   })
   //   log('Peer server created.')
 

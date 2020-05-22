@@ -52,7 +52,7 @@ module.exports = configure(function(ctx) {
       directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: ['LocalStorage']
     },
 
     // https://quasar.dev/quasar-cli/cli-documentation/supporting-ie
@@ -105,23 +105,16 @@ module.exports = configure(function(ctx) {
       https: true,
       port: 8080,
       open: true, // opens browser window automatically
-      proxy: {
-        // proxy all requests starting with /api to jsonplaceholder
-        '/api': {
+      proxy: [
+        {
+          context: ['/healthz', '/peerjs'],
           target: 'http://localhost:3000',
           changeOrigin: true
           // pathRewrite: {
           //   '^/api': ''
           // }
         }
-        //   '/peerjs': {
-        //     target: 'http://localhost:3000',
-        //     changeOrigin: true
-        //     // pathRewrite: {
-        //     //   '^/peerjs': ''
-        //     // }
-        //   }
-      }
+      ]
     },
 
     // animations: 'all', // --- includes all animations
