@@ -36,3 +36,21 @@ export function startNodeProject(
     // nodejs.start('main.js', startupCallback, { redirectOutputToLogcat: false });
   }
 }
+
+export const startServer = () =>
+  new Promise<void>((resolve, reject) => {
+    console.log('STARTING SERVER.....') // TODO remove
+    if (!nodejs) resolve()
+    else {
+      nodejs.channel.on('ready', () => resolve())
+      nodejs.start('main.js', err => {
+        if (err) {
+          console.log(err)
+          reject()
+        } else {
+          console.log('Node.js Mobile Engine Started')
+          resolve()
+        }
+      })
+    }
+  })

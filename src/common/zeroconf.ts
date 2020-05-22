@@ -61,6 +61,65 @@ const plugins = Platform.is.cordova
 
 export default plugins?.zeroconf
 
+export const getHostname = () =>
+  new Promise<string>((resolve, reject) => {
+    if (!plugins?.zeroconf) resolve('localhost')
+    // TODO other name when SPA? l
+    else
+      plugins.zeroconf.getHostname(
+        hostname => resolve(hostname),
+        (error: unknown) => reject(error)
+      )
+  })
+
+export const register = (
+  type: string,
+  domain: string,
+  name: string,
+  port: number,
+  txtRecord: Record<string, string>
+) =>
+  new Promise<ServiceResult>((resolve, reject) => {
+    if (!plugins?.zeroconf)
+      reject('Zeroconf service registration only works with Cordova.')
+    else
+      plugins.zeroconf.register(
+        type,
+        domain,
+        name,
+        port,
+        txtRecord,
+        result => resolve(result),
+        (error: unknown) => reject(error)
+      )
+  })
+
+export const watch = (type: string, domain: string, duration = 5000) =>
+  new Promise<Service[]>((resolve, reject) => {
+    const result: Service[] = []
+    if (!plugins?.zeroconf) resolve([])
+    else {
+      setTimeout(() => {
+        plugins.zeroconf.unwatch(
+          type,
+          domain,
+          () => resolve(result),
+          (error: unknown) =>
+            reject('Error unwatching the zeroconf services' + error)
+        )
+      }, duration)
+      plugins.zeroconf.watch(
+        type,
+        domain,
+        res => {
+          result.push(res.service) // TODO filter
+        },
+        (error: unknown) =>
+          reject('Error watching the zeroconf services' + error)
+      )
+    }
+  })
+
 // TODO See how it is possible to use mDNS:
 // zeroConfPlugin.register(
 //   '_http._tcp.',

@@ -4,17 +4,17 @@
       q-card
         q-card-section.row
           q-input.col-5(v-model="localId" name="localId" color="primary" label="Your ID"  filled readonly)
-          q-input.col-5(v-model="peerId" name="peerId" color="primary" label="Peer ID" clearable filled :readonly="calling")
+          q-input.col-5(v-model="remoteId" name="remoteId" color="primary" label="Remote ID" clearable filled :readonly="calling")
           div.col-2(v-if="calling") Ongoing call
           q-btn.col-2(v-if="!calling" @click="call") call
-          q-btn.col-2(v-if="calling" @click="endCall") End call
+          q-btn.col-2(v-if="calling" @click="end") End call
       q-card.col-12
-        video(v-if="calling" :srcObject.prop="peerStream"
+        video(v-if="calling" :srcObject.prop="remoteStream"
           autoplay="autoplay")
         video(v-else :srcObject.prop="localStream" muted="true"
           autoplay="autoplay")
         q-card-section
-          div.text-h6(v-if="calling") {{peerId}}
+          div.text-h6(v-if="calling") {{remoteId}}
           div.text-h6(v-else) You
       q-card.col-2(v-if="calling")
         video(:srcObject.prop="localStream" muted="true"
@@ -24,134 +24,64 @@
 </template>
 
 <script lang="ts">
-import permissionsPlugin from 'components/permissions-plugin'
-
-import { defineComponent, ref } from '@vue/composition-api'
-import Peer from 'peerjs'
-import { Platform } from 'quasar'
-
-const getPeerConfig = () => {
-  let host = 'localhost'
-  let port = 3000
-  if (!Platform.is.cordova) {
-    host = window.location.hostname
-    port =
-      process.env.NODE_ENV === 'development'
-        ? 3000
-        : parseInt(window.location.port)
-  }
-  return { host, port, secure: false }
-}
-
+import { startPeer } from 'src/compositions/peer'
+import { defineComponent } from '@vue/composition-api'
+import { store } from 'src/store'
+import axios from 'axios'
 export default defineComponent({
   name: 'PageChat',
   setup() {
-    const localId = ref<string>('')
-    const peerId = ref<string>('')
-    const localStream = ref<MediaStream>(new MediaStream())
-    const peerStream = ref<MediaStream>(new MediaStream())
-    // TODO get/set other ids...
-    const peer = new Peer(getPeerConfig())
+    const peerConfig = store.getters['chat/peerjs']
+    const serverUrl = store.getters['chat/url']
+    const {
+      ready,
+      connected,
+      calling,
+      disconnect,
+      call,
+      end,
+      localId,
+      localStream,
+      remoteId,
+      remoteStream
+    } = startPeer(peerConfig)
 
-    let callConnection: Peer.MediaConnection
-
-    const calling = ref<boolean>(false)
-    peer.on('open', function() {
-      console.log('open')
-      localId.value = peer.id
-    })
-
-    peer.on('connection', function(connection) {
-      console.log('connection')
-      peerId.value = connection.peer
-    })
-
-    peer.on('error', function(err) {
-      console.error('An error ocurred with peer: ' + err)
-    })
-
-    const setCall = (call: Peer.MediaConnection): void => {
-      callConnection = call
-
-      callConnection.on('stream', function(stream) {
-        peerStream.value = stream
-        calling.value = true
-      })
-      // Handle when the call finishes
-      callConnection.on('close', function() {
-        alert('The videocall has finished')
-        calling.value = false
-        peerId.value = ''
-      })
-    }
-
-    peer.on('call', function(call) {
-      console.log('on call')
-      // var acceptsCall = confirm(
-      //   'Videocall incoming, do you want to accept it ?'
-      // )
-      const acceptsCall = true
-      if (acceptsCall) {
-        // Answer the call with your own video/audio stream
-        call.answer(localStream.value)
-        peerId.value = call.peer
-        setCall(call)
-        // use call.close() to finish a call
-      } else {
-        console.log('Call denied !')
-      }
-    })
-
-    const call = () => {
-      console.log('call')
-      setCall(peer.call(peerId.value, localStream.value))
-    }
-
-    const endCall = () => {
-      console.log('end call')
-      callConnection.close()
-      calling.value = false
-    }
-
-    const setLocalStream = () => {
-      if (navigator.mediaDevices) {
-        navigator.mediaDevices
-          .getUserMedia({
-            audio: true,
-            video: {
-              facingMode: 'user' // 'environment'
+    // * Automatically starts the video call when someone else is connected to the same server
+    const poll = setInterval(() => {
+      console.log('poll...')
+      console.log(`${serverUrl}/peerjs/peers`)
+      axios
+        .get(`${serverUrl}/peerjs/peers`)
+        .then(({ data }: { data: string[] }) => {
+          console.log(data)
+          if (data.length > 1) {
+            const remote = data.find(id => id !== localId.value)
+            if (remote) {
+              if (!calling.value) {
+                remoteId.value = remote
+                call()
+              }
+              clearInterval(poll)
             }
-          })
-          .then(media => {
-            localStream.value = media
-          })
-      }
-    }
-    if (Platform.is.cordova) {
-      const perms = [
-        permissionsPlugin.MODIFY_AUDIO_SETTINGS,
-        permissionsPlugin.RECORD_AUDIO,
-        permissionsPlugin.CAPTURE_AUDIO_OUTPUT,
-        permissionsPlugin.CAMERA
-      ]
-
-      permissionsPlugin.requestPermission(
-        perms,
-        () => setLocalStream(),
-        () => console.log('FUNCKING NIGHTMARE')
-      )
-    } else {
-      setLocalStream()
-    }
+          }
+        })
+        .catch(err => {
+          console.log('ERROR')
+          console.log(err)
+        })
+    }, 5000)
 
     return {
-      localId,
-      peerId,
-      localStream,
-      peerStream,
+      ready,
+      connected,
+      calling,
+      disconnect,
       call,
-      endCall,
-      calling
+      end,
+      localId,
+      localStream,
+      remoteId,
+      remoteStream
     }
   }
 })

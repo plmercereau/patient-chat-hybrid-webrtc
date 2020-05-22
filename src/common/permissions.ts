@@ -3,9 +3,6 @@ import { Platform } from 'quasar'
 interface CordovaPlugins {
   permissions: PermissionPlugin
 }
-const plugins = Platform.is.cordova
-  ? (cordova.plugins as CordovaPlugins)
-  : undefined
 
 type ACCESS_CHECKIN_PROPERTIES = 'android.permission.ACCESS_CHECKIN_PROPERTIES'
 type ACCESS_COARSE_LOCATION = 'android.permission.ACCESS_COARSE_LOCATION'
@@ -484,4 +481,6 @@ interface PermissionPlugin {
   ) => void
 }
 
-export default plugins?.permissions
+export const permissionsPlugin = Platform.is.cordova
+  ? (cordova.plugins as CordovaPlugins).permissions
+  : undefined
