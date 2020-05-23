@@ -49,7 +49,6 @@ export default defineComponent({
     })
 
     const start = () => store.dispatch('server/start')
-    // const username = computed(() => store.getters['chat/username'])
     return {
       apkUrl,
       server,
