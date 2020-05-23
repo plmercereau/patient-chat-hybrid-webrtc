@@ -1,4 +1,5 @@
 export interface PeerServer {
+  name: string
   host: string
   port: number
   secure: boolean

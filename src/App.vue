@@ -12,7 +12,6 @@ export default defineComponent({
   name: 'App',
   setup() {
     onMounted(async () => {
-      console.log('APP IS MOUNTED!!!')
       await store.dispatch('chat/load')
     })
   }

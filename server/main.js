@@ -22,19 +22,19 @@ try {
 
 // A sample object to show how the channel supports generic
 // JavaScript objects.
-class Reply {
-  constructor(replyMsg, originalMsg) {
-    this.reply = replyMsg
-    this.original = originalMsg
-  }
-}
+// class Reply {
+//   constructor(replyMsg, originalMsg) {
+//     this.reply = replyMsg
+//     this.original = originalMsg
+//   }
+// }
 
 // Listen to messages from Cordova.
-cordova.channel.on('message', msg => {
-  log(`MESSAGE received: ${msg}`)
-  // Reply sending a user defined object.
-  cordova.channel.send(new Reply('Message received!', JSON.stringify(msg)))
-})
+// cordova.channel.on('message', msg => {
+//   log(`MESSAGE received: ${msg}`)
+//   // Reply sending a user defined object.
+//   cordova.channel.send(new Reply('Message received!', JSON.stringify(msg)))
+// })
 
 // Listen to event 'myevent' from Cordova.
 // cordova.channel.on('express', msg => {

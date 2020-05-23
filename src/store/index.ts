@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex, { Store } from 'vuex'
 
 import chat from './chat'
+import server from './server'
 
 Vue.use(Vuex)
 
@@ -18,7 +19,8 @@ export let store: Store<{}>
 export default function(/* { ssrContext } */) {
   store = new Vuex.Store({
     modules: {
-      chat
+      chat,
+      server
     },
 
     // enable strict mode (adds overhead!)

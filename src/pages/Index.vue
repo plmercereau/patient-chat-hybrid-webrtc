@@ -1,29 +1,51 @@
 <template lang="pug">
   q-page
-    div host: {{server}}
-    q-btn(@click="refresh") Refresh
-    q-list(bordered separator)
-      q-item(v-for="service in servers" :key="service.host" clickable v-ripple)
-        q-item-section {{service}}
-    //- div(v-if="apkUrl")
-    //-   a(:href="apkUrl") {{ apkUrl }}
+    q-card(flat bordered)
+      q-card-section.text-h6 Current server
+      q-card-section.q-pt-none(v-if="server") {{server.name}}
+      q-card-section(v-else)
+        q-btn(@click="start" v-if="!ready") Start local server
+        q-spinner(v-else color="primary" size="3em")
+    q-card(flat bordered)
+      q-card-section.text-h6 Servers
+      q-card-section
+        q-list(bordered separator)
+          q-item(v-for="service in servers" :key="service.host" clickable v-ripple)
+            q-item-section {{service.name}}
+    q-card(flat bordered v-if="server")
+      q-card-section.text-h6 Share the app
+      q-card-section
+        qrcode-vue.text-center(:value="apkUrl" size=200)
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, computed } from '@vue/composition-api'
-// import { Service } from 'src/types'
+import { defineComponent, computed, onMounted } from '@vue/composition-api'
+import QrcodeVue from 'qrcode.vue'
+
 import { store } from 'src/store'
 
 export default defineComponent({
   name: 'PageIndex',
+  components: {
+    QrcodeVue
+  },
   setup() {
-    const apkUrl = ref<string>()
-
     const servers = computed(() => store.getters['chat/servers'])
-    const server = computed(() => store.getters['chat/peerjs'])
-    const refresh = async () => await store.dispatch('chat/listServers')
+    const server = computed(() => store.getters['chat/server'])
+    const starting = computed(() => store.getters['server/starting'])
+    const ready = computed(() => store.getters['server/ready'])
+    const apkUrl = computed(
+      () =>
+        `${
+          store.getters[ready.value ? 'chat/publicUrl' : 'chat/url']
+        }/package.apk`
+    )
+    onMounted(() => {
+      store.dispatch('chat/watchServers')
+    })
 
-    return { apkUrl, server, servers, refresh }
+    const start = () => store.dispatch('server/start')
+    return { apkUrl, server, servers, starting, ready, start }
   }
 })
 </script>

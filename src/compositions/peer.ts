@@ -3,7 +3,7 @@ import Peer from 'peerjs'
 
 import { permissionsPlugin } from 'src/common'
 import { PeerServer } from 'src/common/types'
-
+import { store } from 'src/store'
 const setLocalStream = (ls: Ref<MediaStream>) => {
   if (navigator.mediaDevices) {
     navigator.mediaDevices
@@ -48,8 +48,9 @@ export const startPeer = (peerConfig: PeerServer) => {
   const localStream = ref<MediaStream>(new MediaStream())
   const remoteId = ref<string>('')
   const remoteStream = ref<MediaStream>(new MediaStream())
-
-  const peer = new Peer(peerConfig)
+  console.log('STARTING PEERJS...')
+  console.log(store.getters['chat/hostname'])
+  const peer = new Peer(store.getters['chat/hostname'], peerConfig)
 
   let callConnection: Peer.MediaConnection
 

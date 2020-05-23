@@ -11,15 +11,15 @@
       q-card.col-12
         video(v-if="calling" :srcObject.prop="remoteStream"
           autoplay="autoplay")
-        video(v-else :srcObject.prop="localStream" muted="true"
+        video.local(v-else :srcObject.prop="localStream" muted="true"
           autoplay="autoplay")
         q-card-section
           div.text-h6(v-if="calling") {{remoteId}}
-          div.text-h6(v-else) You
+          div.text-h6(v-else) You: {{localId}}
       q-card.col-2(v-if="calling")
-        video(:srcObject.prop="localStream" muted="true"
+        video.local(:srcObject.prop="localStream" muted="true"
           autoplay="autoplay")
-        q-card-section.text-h6 You
+        q-card-section.text-h6 You: {{localId}}
 
 </template>
 
@@ -31,7 +31,7 @@ import axios from 'axios'
 export default defineComponent({
   name: 'PageChat',
   setup() {
-    const peerConfig = store.getters['chat/peerjs']
+    const peerConfig = store.getters['chat/server']
     const serverUrl = store.getters['chat/url']
     const {
       ready,
@@ -49,7 +49,6 @@ export default defineComponent({
     // * Automatically starts the video call when someone else is connected to the same server
     const poll = setInterval(() => {
       console.log('poll...')
-      console.log(`${serverUrl}/peerjs/peers`)
       axios
         .get(`${serverUrl}/peerjs/peers`)
         .then(({ data }: { data: string[] }) => {
@@ -91,5 +90,9 @@ video {
   /* override other styles to make responsive */
   width: 100% !important;
   height: auto !important;
+}
+video.local {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 </style>

@@ -8,6 +8,9 @@ interface ServiceResult {
   action: string
   service: Service
 }
+
+export type ServiceEventCallback = (result: ServiceResult) => void
+
 type SuccessCallback = (success: string) => void
 interface ZeroConfPlugin {
   registerAddressFamily: 'ipv4' | 'ipv6' | 'any'
@@ -21,7 +24,7 @@ interface ZeroConfPlugin {
     name: string,
     port: number,
     txtRecord: Record<string, string>,
-    success: (result: ServiceResult) => void,
+    success: ServiceEventCallback,
     failure?: Function
   ) => void
   unregister: (
@@ -47,6 +50,9 @@ interface ZeroConfPlugin {
   close: (successCallback: SuccessCallback, failureCallback?: Function) => void
   reInit: (successCallback: SuccessCallback, failureCallback?: Function) => void
 }
+
+const DEFAULT_TYPE = '_http._tcp.'
+const DEFAULT_DOMAIN = 'local.'
 
 export const zeroconfPlugin = Platform.is.cordova
   ? (cordova.plugins as CordovaPlugins).zeroconf
@@ -87,32 +93,25 @@ export const register = (
       )
   })
 
-export const watch = (type: string, domain: string, watchDuration = 3000) =>
-  new Promise<Service[]>((resolve, reject) => {
-    const result: Service[] = []
-    if (!zeroconfPlugin) resolve([])
-    else {
-      console.log('TRY TO WATCH SERVICES....')
-      setTimeout(() => {
-        console.log('UNWATCH ZEROCONF SERVICES')
-        zeroconfPlugin.unwatch(
-          type,
-          domain,
-          () => resolve(result),
-          (error: unknown) =>
-            reject('Error unwatching the zeroconf services' + error)
-        )
-      }, watchDuration)
-      console.log('WATCH ZEROCONF SERVICES')
-      zeroconfPlugin.watch(
+export const watch = (
+  eventHandler: ServiceEventCallback,
+  type: string = DEFAULT_TYPE
+) => {
+  if (zeroconfPlugin) {
+    zeroconfPlugin.watch(type, DEFAULT_DOMAIN, eventHandler, (error: unknown) =>
+      console.log('Error watching the zeroconf services' + error)
+    )
+  }
+}
+
+export const unwatch = (type: string = DEFAULT_TYPE) =>
+  new Promise<void>((resolve, reject) => {
+    if (!zeroconfPlugin) resolve()
+    else
+      zeroconfPlugin.unwatch(
         type,
-        domain,
-        res => {
-          console.log(`FOUND SERVICE: ${JSON.stringify(res)}`)
-          result.push(res.service) // TODO filter
-        },
-        (error: unknown) =>
-          reject('Error watching the zeroconf services' + error)
+        DEFAULT_DOMAIN,
+        () => resolve(),
+        (error: unknown) => reject(error)
       )
-    }
   })

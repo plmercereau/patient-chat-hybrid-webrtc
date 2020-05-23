@@ -1,72 +1,64 @@
 import { State } from './state'
 import { ActionTree } from 'Vuex'
-import {
-  checkServer,
-  SERVICE_PORT,
-  startServer,
-  getHostname,
-  register,
-  watch,
-  SERVICE_NAME
-} from 'src/common'
-import { Platform } from 'quasar'
+import { checkServer, watch } from 'src/common'
+import { isValid } from 'src/common/server'
 
 export const actions: ActionTree<State, {}> = {
-  load: {
-    handler: async ({ dispatch, commit, state }) => {
-      const hostname = await getHostname()
-      commit('setHostname', hostname)
-      if (state.server && (await checkServer(state.server))) {
-        console.log('INITIAL STATE SERVER FOUND') // TODO remove
-        console.log(state.server) // TODO remove
-      } else {
-        await dispatch('selectFirstUp')
-        if (!state.server && !!Platform.is.cordova && state.runServer) {
-          await startServer()
-          commit('setServer', {
-            host: 'localhost',
-            port: SERVICE_PORT,
-            secure: false
-          })
-          try {
-            register('_http._tcp.', 'local.', hostname, SERVICE_PORT, {
-              name: SERVICE_NAME
-            })
-          } catch (error) {
-            console.log('Impossible to register the service')
-          }
-        }
-      }
+  load: async ({ dispatch, state }) => {
+    if (!state.server || !(await checkServer(state.server))) {
+      dispatch('selectFirstUp')
     }
   },
-  selectFirstUp: {
-    // TODO review this
-    handler: async ({ commit }) => {
-      const list = await watch('_http._tcp.', 'local.') // TODO remove!!
+  selectFirstUp: () => {
+    // TODO Finish this
+    // let watching = true
+    console.log('SELECT FIRST UP')
+    watch(result => {
+      console.log(result) // TODO remove!!
+      // TODO check if the result is a chat service. If it is, commit the server and stop watching (watching = false + unwatch)
       // TODO select first one that actually answers to an health check
-      const server = { host: 'localhost', port: SERVICE_PORT, secure: false }
-      if (await checkServer(server)) {
-        console.log('SERVER IS UP!!!')
-        commit('setServer', server)
-      }
-    }
+      // const server = { host: 'localhost', port: SERVICE_PORT, secure: false }
+      // if (await checkServer(server)) {
+      //   console.log('SERVER IS UP!!!')
+      //   commit('setServer', server)
+      // }
+    })
+
+    // setTimeout(() => {
+    //   console.log('SELECT FIRST UP: UNWATCH')
+    //   unwatch().then(() => {
+    //     if (watching) {
+    //       watching = false
+    //       console.log('SELECT FIRST UP: WATCHING STOPPED. NOTHING FOUND')
+    //       // ??? Automatic start ???
+    //     }
+    //   })
+    // }, 5000)
   },
-  listServers: {
-    handler: async ({ state }) => {
-      console.log('LIST NDNS SERVERS') // TODO REMOVE
-      const list = await watch('_http._tcp.', 'local.', 20000) // TODO TRANSFORM AND MUTATE
-      state.servers = list // TODO commit list
-        .filter(
-          service =>
-            service.txtRecord.name === SERVICE_NAME &&
-            service.port === SERVICE_PORT
-        )
-        .map(service => ({
-          host: JSON.stringify(service),
+  // TODO add unwatch servers as well
+  watchServers: ({ commit }) => {
+    console.log('WATCH SERVERS') // TODO REMOVE
+    watch(({ action, service }) => {
+      console.log(`WATCH SERVERS: FOUND ${JSON.stringify(service)}`)
+      if (action === 'resolved' && isValid(service)) {
+        commit('addServer', {
+          name: service.name,
+          host: service.hostname || service.ipv4Addresses[0],
           port: service.port,
           secure: false
-        }))
-      console.log(`SERVER LIST: ${JSON.stringify(list)}`) // TODO remove
-    }
+        })
+      }
+    }) // TODO TRANSFORM AND MUTATE
+    // state.servers = list
+    //   .filter(
+    //     service =>
+    //       service.txtRecord.name === SERVICE_NAME &&
+    //       service.port === SERVICE_PORT
+    //   )
+    //   .map(service => ({
+    //     host: JSON.stringify(service),
+    //     port: service.port,
+    //     secure: false
+    //   }))
   }
 }

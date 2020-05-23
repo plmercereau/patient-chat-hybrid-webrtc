@@ -4,15 +4,13 @@ import { PeerServer } from 'src/common/types'
 export interface State {
   server: PeerServer | null
   servers: PeerServer[]
-  hostname: string | null
-  runServer: boolean
+  hostname: string
 }
 
 export default function(): State {
   return {
-    server: null, // LocalStorage.getItem<PeerServer>('server'),
+    server: null, // LocalStorage.getItem<PeerServer>('server'), // TODO set again and test
     servers: [],
-    hostname: null,
-    runServer: true // TODO set as a param as well
+    hostname: 'localhost'
   }
 }

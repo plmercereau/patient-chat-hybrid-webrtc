@@ -39,7 +39,6 @@ export function startNodeProject(
 
 export const startServer = () =>
   new Promise<void>((resolve, reject) => {
-    console.log('STARTING SERVER.....') // TODO remove
     if (!nodejs) resolve()
     else {
       nodejs.channel.on('ready', () => resolve())
