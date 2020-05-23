@@ -24,40 +24,39 @@
 </template>
 
 <script lang="ts">
-import { startPeer } from 'src/compositions/peer'
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, computed } from '@vue/composition-api'
 import { store } from 'src/store'
 import axios from 'axios'
+import { usePeer } from 'src/compositions/peer'
+import { getLocalStream, getRemoteStream } from '../store/peer'
 export default defineComponent({
   name: 'PageChat',
   setup() {
-    const peerConfig = store.getters['chat/server']
+    // const peerConfig = store.getters['chat/server']
     const serverUrl = store.getters['chat/url']
-    const {
-      ready,
-      connected,
-      calling,
-      disconnect,
-      call,
-      end,
-      localId,
-      localStream,
-      remoteId,
-      remoteStream
-    } = startPeer(peerConfig)
+    const { disconnect, call, end } = usePeer()
+    const localStream = computed(() => getLocalStream())
+    const remoteStream = computed(() => getRemoteStream())
+    const localId = computed<string>(() => store.getters['chat/userName'])
+    const remoteId = computed<string>(
+      () => store.getters['chat/remoteUserName']
+    )
+    const ready = computed<boolean>(() => store.getters['chat/ready'])
+    const connected = computed<boolean>(() => store.getters['chat/connected'])
+    const calling = computed<boolean>(() => store.getters['chat/calling'])
 
     // * Automatically starts the video call when someone else is connected to the same server
     const poll = setInterval(() => {
-      console.log('poll...')
+      // console.log('poll...')
       axios
         .get(`${serverUrl}/peerjs/peers`)
         .then(({ data }: { data: string[] }) => {
-          console.log(data)
+          // console.log(data)
           if (data.length > 1) {
             const remote = data.find(id => id !== localId.value)
             if (remote) {
               if (!calling.value) {
-                remoteId.value = remote
+                store.commit('chat/setRemoteUser', remote)
                 call()
               }
               clearInterval(poll)

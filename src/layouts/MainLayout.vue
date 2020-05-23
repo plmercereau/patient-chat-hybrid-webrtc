@@ -2,8 +2,8 @@
   q-layout(view='lHh Lpr lFf')
     q-header(elevated)
       q-toolbar
-        q-btn(flat, dense, round, icon='menu', aria-label='Menu', @click='leftDrawerOpen = !leftDrawerOpen')
-          q-toolbar-title Patient Chat
+        q-btn(flat, dense, round, icon='menu', aria-label='Menu', @click='toggleDrawer()')
+          q-toolbar-title Patient Chat - {{userName}}
     q-drawer(v-model='leftDrawerOpen', show-if-above, bordered, content-class='bg-grey-1')
       q-list
         q-item-label.text-grey-8(header) Menu
@@ -24,13 +24,18 @@
 </template>
 
 <script>
-export default {
-  name: 'MainLayout',
+import { defineComponent, computed, ref } from '@vue/composition-api'
+import { store } from 'src/store'
 
-  data() {
-    return {
-      leftDrawerOpen: false
+export default defineComponent({
+  name: 'MainLayout',
+  setup() {
+    const leftDrawerOpen = ref(false)
+    const userName = computed(() => store.getters['chat/userName'])
+    const toggleDrawer = () => {
+      leftDrawerOpen.value = !leftDrawerOpen.value
     }
+    return { leftDrawerOpen, userName, toggleDrawer }
   }
-}
+})
 </script>

@@ -3,10 +3,10 @@
     q-card(flat bordered)
       q-card-section.text-h6 Current server
       q-card-section.q-pt-none(v-if="server") {{server.name}}
-      q-card-section(v-else)
+      q-card-section(v-else-if="canRun")
         q-btn(@click="start" v-if="!ready") Start local server
         q-spinner(v-else color="primary" size="3em")
-    q-card(flat bordered)
+    q-card(flat bordered v-if="canBrowse")
       q-card-section.text-h6 Servers
       q-card-section
         q-list(bordered separator)
@@ -14,8 +14,9 @@
             q-item-section {{service.name}}
     q-card(flat bordered v-if="server")
       q-card-section.text-h6 Share the app
-      q-card-section
-        qrcode-vue.text-center(:value="apkUrl" size=200)
+      q-card-section.text-center
+        qrcode-vue(:value="apkUrl" size=200)
+        a(:href="apkUrl") {{apkUrl}}
 </template>
 
 <script lang="ts">
@@ -23,6 +24,7 @@ import { defineComponent, computed, onMounted } from '@vue/composition-api'
 import QrcodeVue from 'qrcode.vue'
 
 import { store } from 'src/store'
+import { Platform } from 'quasar'
 
 export default defineComponent({
   name: 'PageIndex',
@@ -32,6 +34,8 @@ export default defineComponent({
   setup() {
     const servers = computed(() => store.getters['chat/servers'])
     const server = computed(() => store.getters['chat/server'])
+    const canRun = computed(() => store.getters['server/canRun'])
+    const canBrowse = !!Platform.is.cordova
     const starting = computed(() => store.getters['server/starting'])
     const ready = computed(() => store.getters['server/ready'])
     const apkUrl = computed(
@@ -45,7 +49,17 @@ export default defineComponent({
     })
 
     const start = () => store.dispatch('server/start')
-    return { apkUrl, server, servers, starting, ready, start }
+    // const username = computed(() => store.getters['chat/username'])
+    return {
+      apkUrl,
+      server,
+      canRun,
+      canBrowse,
+      servers,
+      starting,
+      ready,
+      start
+    }
   }
 })
 </script>

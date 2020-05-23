@@ -3,24 +3,23 @@ import { ActionTree } from 'Vuex'
 import {
   SERVICE_PORT,
   startServer,
-  getHostname,
+  getHostName,
   register,
   SERVICE_NAME
 } from 'src/common'
-import { Platform } from 'quasar'
 
 export const actions: ActionTree<State, {}> = {
   start: async ({ commit, state }) => {
     // ? check is server is not already up and running
-    if (!!Platform.is.cordova && state.runServer) {
-      const hostname = await getHostname()
-      commit('chat/setHostname', hostname, { root: true })
+    if (state.canRun) {
+      const hostName = await getHostName()
+      commit('chat/setHostName', hostName, { root: true })
       commit('starting')
       await startServer()
       commit(
         'chat/setServer',
         {
-          name: hostname,
+          name: hostName,
           host: 'localhost',
           port: SERVICE_PORT,
           secure: false
@@ -29,7 +28,7 @@ export const actions: ActionTree<State, {}> = {
       )
       commit('ready')
       try {
-        register('_http._tcp.', 'local.', hostname, SERVICE_PORT, {
+        register('_http._tcp.', 'local.', hostName, SERVICE_PORT, {
           name: SERVICE_NAME
         })
       } catch (error) {

@@ -1,11 +1,13 @@
+import { Platform } from 'quasar'
+
 export interface State {
   serverStatus: 'down' | 'starting' | 'up'
-  runServer: boolean
+  canRun: boolean
 }
 
 export default function(): State {
   return {
     serverStatus: 'down',
-    runServer: true // ? set as a param as well ?
+    canRun: !!Platform.is.cordova
   }
 }

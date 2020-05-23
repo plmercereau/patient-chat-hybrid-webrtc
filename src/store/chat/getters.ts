@@ -7,8 +7,10 @@ export const getters: GetterTree<State, {}> = {
     server &&
     `${server.secure ? 'https' : 'http'}://${server.host}:${server.port}`,
   servers: state => state.servers,
-  publicUrl: ({ server, hostname }) =>
+  publicUrl: ({ server, hostName }) =>
     server &&
-    `${server.secure ? 'https' : 'http'}://${hostname}:${server.port}`,
-  hostname: state => state.hostname
+    `${server.secure ? 'https' : 'http'}://${hostName}:${server.port}`,
+  hostName: state => state.hostName,
+  userName: state => state.userName,
+  remoteUserName: state => state.remoteUserName
 }

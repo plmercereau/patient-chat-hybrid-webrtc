@@ -14,7 +14,7 @@ export type ServiceEventCallback = (result: ServiceResult) => void
 type SuccessCallback = (success: string) => void
 interface ZeroConfPlugin {
   registerAddressFamily: 'ipv4' | 'ipv6' | 'any'
-  getHostname: (
+  getHostName: (
     successCallback: SuccessCallback,
     failureCallback?: Function
   ) => void
@@ -60,13 +60,13 @@ export const zeroconfPlugin = Platform.is.cordova
 
 if (zeroconfPlugin) zeroconfPlugin.registerAddressFamily = 'ipv4'
 
-export const getHostname = () =>
+export const getHostName = () =>
   new Promise<string>((resolve, reject) => {
     if (!zeroconfPlugin) resolve('localhost')
     // TODO other name when SPA? l
     else
-      zeroconfPlugin.getHostname(
-        hostname => resolve(hostname),
+      zeroconfPlugin.getHostName(
+        hostName => resolve(hostName),
         (error: unknown) => reject(error)
       )
   })

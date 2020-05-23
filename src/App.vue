@@ -13,6 +13,18 @@ export default defineComponent({
   setup() {
     onMounted(async () => {
       await store.dispatch('chat/load')
+      if (store.getters['chat/server']) {
+        console.log('FOUND A SERVER. START PEERJS')
+        store.dispatch('chat/startPeerClient')
+      }
+      store.watch(
+        (state, getters) => getters['chat/server'],
+        () => {
+          console.log('server changed')
+          // TODO RESET PEER SERVER
+          store.dispatch('chat/startPeerClient')
+        }
+      )
     })
   }
 })

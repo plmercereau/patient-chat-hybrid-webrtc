@@ -3,7 +3,7 @@ export { startServer } from './express'
 export { permissionsPlugin } from './permissions'
 export { devicePlugin } from './device'
 export {
-  getHostname,
+  getHostName,
   register,
   watch,
   unwatch,

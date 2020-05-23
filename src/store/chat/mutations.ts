@@ -11,7 +11,28 @@ export const mutations: MutationTree<State> = {
   addServer(state, ...servers: PeerServer[]) {
     state.servers.push(...servers)
   },
-  setHostname: (state, hostname: string) => {
-    state.hostname = hostname
+  setHostName: (state, hostName: string) => {
+    state.hostName = hostName
+  },
+  setUserName: (state, userName: string) => {
+    state.userName = userName
+  },
+  setRemoteUser: (state, userName: string) => {
+    state.remoteUserName = userName
+  },
+  ready: state => {
+    state.ready = true
+  },
+  connected: state => {
+    state.connected = true
+  },
+  disconnected: state => {
+    state.connected = false
+  },
+  callStart: state => {
+    state.calling = true
+  },
+  callEnd: state => {
+    state.calling = false
   }
 }
