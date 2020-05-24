@@ -8,8 +8,9 @@ export const mutations: MutationTree<State> = {
     state.server = server
     LocalStorage.set('server', server)
   },
-  addServer(state, ...servers: PeerServer[]) {
-    state.servers.push(...servers)
+  addServer(state, server: PeerServer) {
+    if (state.servers.every(s => s.host !== server.host))
+      state.servers = [...state.servers, server]
   },
   setHostName: (state, hostName: string) => {
     state.hostName = hostName

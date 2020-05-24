@@ -12,7 +12,7 @@ export const createPeer = (
 
 export const getPeer = () => peer
 
-let localStream = new MediaStream()
+let localStream: MediaStream // = new MediaStream()
 export const getLocalStream = () => localStream
 export const setLocalStream = (stream: MediaStream) => {
   localStream = stream

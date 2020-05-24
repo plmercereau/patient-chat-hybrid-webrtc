@@ -1,10 +1,11 @@
 import { State } from './state'
 import { ActionTree } from 'Vuex'
-import { checkServer, watch, getHostName, permissionsPlugin } from 'src/common'
+import { checkServer, watch, getHostName } from 'src/common'
 import { isValid } from 'src/common/server'
 import { Platform } from 'quasar'
 import { PeerServer } from 'src/common/types'
-import { createPeer, setLocalStream, getLocalStream, setCall } from '../peer'
+import { createPeer, getLocalStream, setCall } from '../peer'
+import { startCamera } from 'src/common/media'
 
 // ? Move elsewhere?
 const WEB_SERVER: PeerServer = {
@@ -12,43 +13,6 @@ const WEB_SERVER: PeerServer = {
   host: 'localhost',
   port: 3000,
   secure: false
-}
-
-// ? Move elsewhere?
-const setNavLocalStream = () => {
-  if (navigator.mediaDevices) {
-    navigator.mediaDevices
-      .getUserMedia({
-        audio: true,
-        video: {
-          facingMode: 'user' // 'environment'
-        }
-      })
-      .then(media => {
-        console.log('SET LOCAL STREAM')
-        setLocalStream(media)
-      })
-  }
-}
-
-// ? Move elsewhere?
-const setHybridLocalStream = () => {
-  if (permissionsPlugin) {
-    const perms = [
-      permissionsPlugin.MODIFY_AUDIO_SETTINGS,
-      permissionsPlugin.RECORD_AUDIO,
-      permissionsPlugin.CAPTURE_AUDIO_OUTPUT,
-      permissionsPlugin.CAMERA
-    ]
-
-    permissionsPlugin.requestPermission(
-      perms,
-      () => setNavLocalStream(),
-      () => console.log('FUNCKING NIGHTMARE')
-    )
-  } else {
-    setNavLocalStream()
-  }
 }
 
 export const actions: ActionTree<State, {}> = {
@@ -123,15 +87,18 @@ export const actions: ActionTree<State, {}> = {
     //     secure: false
     //   }))
   },
-  startPeerClient: ({ state, commit }) => {
+  startPeerClient: ({ state, commit, getters }) => {
     if (state.server) {
       console.log('Creating PeerJS client...')
-      const peer = createPeer(state.userName, state.server)
+      console.log(getters['peerConfig'])
+      const peer = createPeer(state.userName, getters['peerConfig'])
+
       peer.on('open', () => {
         console.log('open')
-        commit('setUserName', peer.id)
-        commit('ready')
-        setHybridLocalStream()
+        startCamera().then(() => {
+          commit('setUserName', peer.id)
+          commit('ready')
+        })
       })
 
       peer.on('connection', connection => {

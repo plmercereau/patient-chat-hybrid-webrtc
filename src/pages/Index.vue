@@ -10,7 +10,7 @@
       q-card-section.text-h6 Servers
       q-card-section
         q-list(bordered separator)
-          q-item(v-for="service in servers" :key="service.host" clickable v-ripple)
+          q-item(v-for="service in servers" :key="service.host" clickable v-ripple @click="select(service)")
             q-item-section {{service.name}}
     q-card(flat bordered v-if="server")
       q-card-section.text-h6 Share the app
@@ -25,6 +25,8 @@ import QrcodeVue from 'qrcode.vue'
 
 import { store } from 'src/store'
 import { Platform } from 'quasar'
+import { PeerServer } from '../common/types'
+import { checkServer } from 'src/common'
 
 export default defineComponent({
   name: 'PageIndex',
@@ -39,14 +41,18 @@ export default defineComponent({
     const starting = computed(() => store.getters['server/starting'])
     const ready = computed(() => store.getters['server/ready'])
     const apkUrl = computed(
-      () =>
-        `${
-          store.getters[ready.value ? 'chat/publicUrl' : 'chat/url']
-        }/package.apk`
+      () => `${store.getters['chat/publicUrl']}/package.apk`
     )
     onMounted(() => {
       store.dispatch('chat/watchServers')
     })
+
+    const select = async (server: PeerServer) => {
+      if (await checkServer(server)) {
+        console.log(`SELECTED ${JSON.stringify(server)}`)
+        store.commit('chat/setServer', server)
+      }
+    }
 
     const start = () => store.dispatch('server/start')
     return {
@@ -57,7 +63,8 @@ export default defineComponent({
       servers,
       starting,
       ready,
-      start
+      start,
+      select
     }
   }
 })

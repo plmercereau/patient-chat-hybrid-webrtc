@@ -11,7 +11,8 @@ export const usePeer = () => {
 
   const call = () => {
     console.log('call')
-    setCall(peer.call(store.getters['chat/remoteUserName'], getLocalStream()))
+    peer &&
+      setCall(peer.call(store.getters['chat/remoteUserName'], getLocalStream()))
   }
 
   const end = () => {
