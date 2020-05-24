@@ -35,5 +35,11 @@ export const mutations: MutationTree<State> = {
   },
   callEnd: state => {
     state.calling = false
+  },
+  startLocal: state => {
+    state.local = true
+  },
+  stopLocal: state => {
+    state.local = false
   }
 }

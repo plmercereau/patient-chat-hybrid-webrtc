@@ -87,18 +87,27 @@ export const actions: ActionTree<State, {}> = {
     //     secure: false
     //   }))
   },
-  startPeerClient: ({ state, commit, getters }) => {
+  startLocal: async ({ state, commit }) => {
+    console.log('start local')
+    if (!state.local) {
+      await startCamera()
+      commit('startLocal')
+    }
+  },
+  stopLocal: ({ state, commit }) => {
+    if (state.local) {
+      commit('stopLocal')
+      // await stopCamera() // TODO stop stream
+    }
+  },
+  startPeerClient: ({ state, commit, dispatch, getters }) => {
     if (state.server) {
-      console.log('Creating PeerJS client...')
-      console.log(getters['peerConfig'])
       const peer = createPeer(state.userName, getters['peerConfig'])
 
       peer.on('open', () => {
         console.log('open')
-        startCamera().then(() => {
-          commit('setUserName', peer.id)
-          commit('ready')
-        })
+        commit('setUserName', peer.id)
+        commit('ready')
       })
 
       peer.on('connection', connection => {
@@ -119,10 +128,11 @@ export const actions: ActionTree<State, {}> = {
         const acceptsCall = true
         if (acceptsCall) {
           // Answer the call with your own video/audio stream
-          call.answer(getLocalStream())
-          commit('setRemoteUser', call.peer)
-          commit('callStart')
-          setCall(call)
+          dispatch('startLocal').then(() => {
+            call.answer(getLocalStream())
+            commit('setRemoteUser', call.peer)
+            setCall(call)
+          })
         } else {
           console.log('Call denied !')
         }

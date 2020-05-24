@@ -1,3 +1,5 @@
+// TODO move outside of the store folder!
+
 import Peer from 'peerjs'
 import { store } from '.'
 let peer: Peer
@@ -18,7 +20,7 @@ export const setLocalStream = (stream: MediaStream) => {
   localStream = stream
 }
 
-let remoteStream = new MediaStream()
+let remoteStream: MediaStream //= new MediaStream()
 export const getRemoteStream = () => remoteStream
 export const setRemoteStream = (stream: MediaStream) => {
   remoteStream = stream
@@ -34,6 +36,7 @@ export const setCall = (call: Peer.MediaConnection): void => {
   setCallConnection(call)
 
   call.on('stream', stream => {
+    // TODO why is it called twice?
     console.log('stream')
     setRemoteStream(stream)
     store.commit('chat/callStart')

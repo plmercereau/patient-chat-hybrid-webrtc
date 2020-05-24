@@ -6,25 +6,32 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from '@vue/composition-api'
-import { store } from './store'
 
 export default defineComponent({
   name: 'App',
-  setup() {
+  setup(_, { root: { $router, $route, $store } }) {
     onMounted(async () => {
       // TODO: startPeerClient après que le serveur soit prêt!!!
-      await store.dispatch('chat/load')
-      if (store.getters['chat/server']) {
+      await $store.dispatch('chat/load')
+      if ($store.getters['chat/server']) {
         console.log('FOUND A SERVER. START PEERJS')
-        store.dispatch('chat/startPeerClient')
+        await $store.dispatch('chat/startPeerClient')
       }
       // TODO watch username change: disconnect/reconnect from peerjs
-      store.watch(
-        (state, getters) => getters['chat/server'],
+      $store.watch(
+        (_, getters) => getters['chat/server'],
         () => {
           console.log('server changed')
           // TODO RESET PEER SERVER
-          store.dispatch('chat/startPeerClient')
+          $store.dispatch('chat/startPeerClient')
+        }
+      )
+
+      // * Go to the 'Chat' page when a call started, if not already.
+      $store.watch<boolean>(
+        (_, getters) => getters['chat/calling'],
+        connected => {
+          if (connected && $route.path !== '/chat') $router.push('/chat')
         }
       )
     })

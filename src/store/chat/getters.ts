@@ -27,5 +27,6 @@ export const getters: GetterTree<State, {}> = {
   remoteUserName: state => state.remoteUserName,
   calling: state => state.calling,
   ready: state => state.ready,
-  connected: state => state.connected
+  connected: state => state.connected,
+  local: state => state.local
 }

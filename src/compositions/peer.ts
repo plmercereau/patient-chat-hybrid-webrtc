@@ -23,6 +23,7 @@ export const usePeer = () => {
     if (getCallConnection().open) end()
     peer.disconnect()
   }
+
   return {
     disconnect,
     call,

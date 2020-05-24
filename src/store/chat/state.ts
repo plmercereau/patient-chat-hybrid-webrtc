@@ -9,6 +9,7 @@ export interface State {
   connected: boolean
   calling: boolean
   remoteUserName: string | undefined
+  local: boolean
 }
 
 export default (): State => {
@@ -20,6 +21,7 @@ export default (): State => {
     ready: false,
     connected: false,
     calling: false,
-    remoteUserName: undefined
+    remoteUserName: undefined,
+    local: false
   }
 }

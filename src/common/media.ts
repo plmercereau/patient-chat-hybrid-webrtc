@@ -3,7 +3,6 @@ import { setLocalStream, getLocalStream } from 'src/store/peer'
 
 // ? Move elsewhere?
 const setNavLocalStream = async () => {
-  console.log('setNavLocalStream')
   if (navigator.mediaDevices) {
     const media = await navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -16,13 +15,6 @@ const setNavLocalStream = async () => {
       }
     })
     setLocalStream(media)
-    //   .then(media => {
-    //     console.log('setNavLocalStream: OK')
-    //     setLocalStream(media)
-    //   })
-    //   .catch(error => {
-    //     console.log('setNavLocalStream' + error)
-    //   })
   } else {
     console.log('NO MEDIA DEVICES??')
   }
@@ -30,7 +22,6 @@ const setNavLocalStream = async () => {
 
 // ? Move elsewhere?
 export const startCamera = async () => {
-  console.log('startCamera')
   await setNavLocalStream()
   // TODO make the plugin permission work
   //   if (permissionsPlugin) {
