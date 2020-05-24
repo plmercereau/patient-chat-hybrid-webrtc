@@ -3,20 +3,18 @@
     div.row.justify-center.items-start.q-gutter-md
       q-card(v-if="ready")
         q-card-section.row
-          q-input.col-5(v-model="localId" name="localId" color="primary" label="Your ID"  filled readonly)
-          q-input.col-5(v-model="remoteId" name="remoteId" color="primary" label="Remote ID" clearable filled :readonly="calling")
-          div.col-2(v-if="calling") Ongoing call
-          q-btn.col-2(v-if="!calling" @click="call") call
-          q-btn.col-2(v-if="calling" @click="end") End call
+          q-input.col-6(v-model="remoteId" name="remoteId" color="primary" label="Remote ID" clearable filled readonly)
+          q-btn.col-6(v-if="!calling" @click="call") Call
+          q-btn.col-6(v-if="calling" @click="end") End call
       q-card.col-12
         video(v-if="calling" :srcObject.prop="remoteStream" autoplay controls)
         video.local(v-else-if="local" :srcObject.prop="localStream" muted autoplay)
         q-card-section
-          div.text-h6(v-if="calling") {{remoteId}}
-          div.text-h6(v-else-if="local") You: {{localId}}
-      q-card.col-2(v-if="calling && local")
+          div.text-h6.text-center(v-if="calling") {{remoteId}}
+          div.text-h6.text-center(v-else-if="local") You
+      q-card.col-4(v-if="calling && local")
         video.local(:srcObject.prop="localStream" muted autoplay)
-        q-card-section.text-h6 You: {{localId}}
+        q-card-section.text-h6.text-center You
 
 </template>
 
