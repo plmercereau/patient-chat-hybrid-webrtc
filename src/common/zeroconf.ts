@@ -14,7 +14,7 @@ export type ServiceEventCallback = (result: ServiceResult) => void
 type SuccessCallback = (success: string) => void
 interface ZeroConfPlugin {
   registerAddressFamily: 'ipv4' | 'ipv6' | 'any'
-  getHostName: (
+  getHostname: (
     successCallback: SuccessCallback,
     failureCallback?: Function
   ) => void
@@ -65,7 +65,7 @@ export const getHostName = () =>
     if (!zeroconfPlugin) resolve('localhost')
     // TODO other name when SPA? l
     else
-      zeroconfPlugin.getHostName(
+      zeroconfPlugin.getHostname(
         hostName => resolve(hostName),
         (error: unknown) => reject(error)
       )
