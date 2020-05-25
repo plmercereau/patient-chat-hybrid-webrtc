@@ -14,13 +14,13 @@ export const createPeer = (
 
 export const getPeer = () => peer
 
-let localStream: MediaStream // = new MediaStream()
+let localStream: MediaStream | null = null //= new MediaStream()
 export const getLocalStream = () => localStream
 export const setLocalStream = (stream: MediaStream) => {
   localStream = stream
 }
 
-let remoteStream: MediaStream //= new MediaStream()
+let remoteStream: MediaStream | null = null //= new MediaStream()
 export const getRemoteStream = () => remoteStream
 export const setRemoteStream = (stream: MediaStream) => {
   remoteStream = stream
@@ -33,19 +33,20 @@ export const setCallConnection = (conn: Peer.MediaConnection) => {
 }
 
 export const setCall = (call: Peer.MediaConnection): void => {
+  console.log('Set call')
   setCallConnection(call)
 
   call.on('stream', stream => {
     // TODO why is it called twice?
     console.log('stream')
     setRemoteStream(stream)
-    store.commit('chat/callStart')
+    store.commit('chat/startCall')
   })
   // Handle when the call finishes
   call.on('close', () => {
-    alert('The videocall has finished')
-    store.commit('chat/callEnd')
-    store.commit('chat/disconnected')
+    // alert('The videocall has finished')
+    console.log('The videocall has finished')
+    store.dispatch('chat/disconnect')
     setRemoteStream(new MediaStream())
   })
 }

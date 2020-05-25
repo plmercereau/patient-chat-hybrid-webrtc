@@ -1,39 +1,38 @@
 import { State } from './state'
 import { ActionTree } from 'Vuex'
-import { checkServer, watch, getHostName } from 'src/common'
+import { watch, startCamera } from 'src/common'
 import { isValid } from 'src/common/server'
 import { Platform } from 'quasar'
 import { PeerServer } from 'src/common/types'
-import { createPeer, getLocalStream, setCall } from '../peer'
-import { startCamera } from 'src/common/media'
-
-// ? Move elsewhere?
-const WEB_SERVER: PeerServer = {
-  name: 'Local server',
-  host: 'localhost',
-  port: 3000,
-  secure: false
-}
+import {
+  createPeer,
+  getLocalStream,
+  setCall,
+  getPeer,
+  getCallConnection
+} from '../peer'
+import axios from 'axios'
 
 export const actions: ActionTree<State, {}> = {
-  load: async ({ dispatch, state, commit }) => {
-    // Check if a server has been already set, and is up and running
-    if (!state.server || !(await checkServer(state.server))) {
-      // If not, and running on cordova/android, look for one
-      if (Platform.is.cordova) {
-        dispatch('selectFirstUp')
-      } else if (await checkServer(WEB_SERVER)) commit('setServer', WEB_SERVER) // If running the web app, check if a local server is available
-    }
+  load: async ({ dispatch, state, commit, rootGetters }) => {
+    console.log('load')
+    await dispatch('server/start', undefined, { root: true })
+
+    const hostName = rootGetters['server/hostName']
+    // ? As an initial state / getter in the store?
     if (!state.userName) {
       commit(
         'setUserName',
         Platform.is.cordova
-          ? await getHostName()
+          ? hostName
           : Math.random()
               .toString(36)
               .substring(7)
       )
     }
+
+    // * Connect to local peer server
+    await dispatch('localConnect')
   },
   selectFirstUp: () => {
     // TODO Finish this
@@ -74,71 +73,115 @@ export const actions: ActionTree<State, {}> = {
           secure: false
         })
       }
-    }) // TODO TRANSFORM AND MUTATE
-    // state.servers = list
-    //   .filter(
-    //     service =>
-    //       service.txtRecord.name === SERVICE_NAME &&
-    //       service.port === SERVICE_PORT
-    //   )
-    //   .map(service => ({
-    //     host: JSON.stringify(service),
-    //     port: service.port,
-    //     secure: false
-    //   }))
+    })
   },
-  startLocal: async ({ state, commit }) => {
+  // * Connect to the local PeerJS server
+  localConnect: async ({ dispatch, getters }) => {
     console.log('start local')
-    if (!state.local) {
-      await startCamera()
-      commit('startLocal')
+    if (!getters['local']) {
+      await dispatch('connect')
     }
   },
-  stopLocal: ({ state, commit }) => {
-    if (state.local) {
-      commit('stopLocal')
-      // await stopCamera() // TODO stop stream
-    }
-  },
-  startPeerClient: ({ state, commit, dispatch, getters }) => {
-    if (state.server) {
-      const peer = createPeer(state.userName, getters['peerConfig'])
 
-      peer.on('open', () => {
-        console.log('open')
-        commit('setUserName', peer.id)
-        commit('ready')
-      })
-
-      peer.on('connection', connection => {
-        console.log('connection')
-        commit('setRemoteUser', connection.peer) // TODODODODODODODODOODODODOOD
-        commit('connected')
-      })
-
-      peer.on('error', err => {
-        console.error('An error ocurred with peer: ' + err)
-      })
-
-      peer.on('call', call => {
-        console.log('on call')
-        // var acceptsCall = confirm(
-        //   'Videocall incoming, do you want to accept it ?'
-        // )
-        const acceptsCall = true
-        if (acceptsCall) {
-          // Answer the call with your own video/audio stream
-          dispatch('startLocal').then(() => {
-            call.answer(getLocalStream())
-            commit('setRemoteUser', call.peer)
-            setCall(call)
-          })
-        } else {
-          console.log('Call denied !')
+  call: async ({ commit, getters, rootGetters }) => {
+    try {
+      const { data }: { data: string[] } = await axios.get(
+        `${getters.url}/peerjs/peers`
+      )
+      const remote = data.find(id => id !== getters.userName)
+      if (remote) {
+        if (!getters.calling) {
+          commit('setRemoteUser', remote)
+          const localStream = getLocalStream() || (await startCamera())
+          setCall(getPeer().call(remote, localStream))
         }
-      })
+      }
+    } catch (err) {
+      console.log('ERROR CONNECTING THE PEER SERVER')
+      console.log(err)
+      console.log(`${rootGetters['chat/url']}/peerjs/peers`)
+    }
+  },
 
-      peer.on('disconnected', () => commit('disconnected'))
+  endCall: ({ commit }) => {
+    const connection = getCallConnection()
+    if (connection.open) getCallConnection().close()
+    commit('endCall')
+  },
+
+  // * Disconnect from the current PeerJS server
+  disconnect: ({ commit, getters, dispatch }) => {
+    if (getters['calling']) {
+      dispatch('endCall')
+    }
+    if (getters['connected']) {
+      const peer = getPeer()
+      if (peer) peer.disconnect()
+      commit('disconnect')
+    }
+  },
+
+  // * Connect to the given PeerJS server, or the local server if none given
+  connect: async (
+    { state, commit, dispatch, rootGetters, getters },
+    server?: PeerServer
+  ) => {
+    const local = !server
+    const config: PeerServer = local
+      ? rootGetters['server/localConfig']
+      : (server as PeerServer)
+
+    if (config !== state.server) {
+      // TODO check if it works
+      console.log('new server')
+      dispatch('disconnect')
+    }
+
+    commit('setServer', config)
+    const peer = createPeer(state.userName, getters['peerConfig'])
+
+    peer.on('open', () => {
+      console.log('open')
+      commit('setUserName', peer.id)
+      commit('ready')
+    })
+
+    peer.on('connection', connection => {
+      console.log('peer connection')
+      commit('setRemoteUser', connection.peer) // TODODODODODODODODOODODODOOD
+      commit('connect')
+    })
+
+    peer.on('error', err => {
+      console.error('An error ocurred with peer: ' + err)
+    })
+
+    peer.on('call', call => {
+      console.log('Call from a peer')
+      // var acceptsCall = confirm(
+      //   'Videocall incoming, do you want to accept it ?'
+      // )
+      if (state.autoAnswer) {
+        startCamera().then(stream => {
+          call.answer(stream)
+          commit('setRemoteUser', call.peer)
+          setCall(call)
+        }) // TODO
+      } else {
+        console.log('Call denied !')
+      }
+    })
+
+    peer.on('disconnected', () => {
+      dispatch('disconnect')
+    })
+
+    if (local) {
+      console.log('What do we have to do here?') // TODO
+    }
+    if (state.autoCall) {
+      // * If 2 peers connected to the server, then start a call
+      await dispatch('call')
     }
   }
 }

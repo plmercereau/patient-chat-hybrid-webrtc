@@ -1,8 +1,10 @@
 export interface PeerServer {
-  name: string
+  name?: string
   host: string
+  path?: string
   port: number
   secure: boolean
+  debug?: number
 }
 
 export interface Service {

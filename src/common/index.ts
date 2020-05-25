@@ -9,3 +9,4 @@ export {
   unwatch,
   zeroconfPlugin
 } from './zeroconf'
+export { startCamera, stopCamera } from './media'

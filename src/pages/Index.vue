@@ -1,11 +1,9 @@
 <template lang="pug">
   q-page
+    q-spinner(v-if="embedded && !ready && starting" color="primary" size="3em")
     q-card(flat bordered)
       q-card-section.text-h6 Current server
       q-card-section.q-pt-none(v-if="server") {{server.name}}
-      q-card-section(v-if="canRun && !ready")
-        q-btn(@click="start" v-if="down") Start local server
-        q-spinner(v-if="starting" color="primary" size="3em")
     q-card(flat bordered v-if="canBrowse")
       q-card-section.text-h6 Servers
       q-card-section
@@ -23,7 +21,7 @@
 import { defineComponent, computed, onMounted } from '@vue/composition-api'
 import QrcodeVue from 'qrcode.vue'
 
-import { PeerServer } from '../common/types'
+import { PeerServer } from 'src/common/types'
 import { checkServer } from 'src/common'
 
 export default defineComponent({
@@ -34,13 +32,13 @@ export default defineComponent({
   setup(_, { root: { $store, $q } }) {
     const servers = computed(() => $store.getters['chat/servers'])
     const server = computed(() => $store.getters['chat/server'])
-    const canRun = computed(() => $store.getters['server/canRun'])
+    const embedded = computed(() => $store.getters['server/embedded'])
     const canBrowse = !!$q.platform.is.cordova
     const down = computed(() => $store.getters['server/down'])
     const starting = computed(() => $store.getters['server/starting'])
     const ready = computed(() => $store.getters['server/ready'])
     const apkUrl = computed(
-      () => `${$store.getters['chat/publicUrl']}/package.apk`
+      () => `${$store.getters['server/publicUrl']}/package.apk`
     )
     onMounted(() => {
       $store.dispatch('chat/watchServers')
@@ -49,21 +47,19 @@ export default defineComponent({
     const select = async (server: PeerServer) => {
       if (await checkServer(server)) {
         console.log(`SELECTED ${JSON.stringify(server)}`)
-        $store.commit('chat/setServer', server)
+        $store.dispatch('chat/connect', server)
       }
     }
 
-    const start = () => $store.dispatch('server/start')
     return {
       apkUrl,
       server,
-      canRun,
+      embedded,
       canBrowse,
       servers,
       down,
       starting,
       ready,
-      start,
       select
     }
   }

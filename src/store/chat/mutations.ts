@@ -1,19 +1,16 @@
 import { MutationTree } from 'vuex'
 import { State } from './state'
 import { PeerServer } from 'src/common/types'
-import { LocalStorage } from 'quasar'
+// import { LocalStorage } from 'quasar'
 
 export const mutations: MutationTree<State> = {
   setServer(state, server: PeerServer) {
     state.server = server
-    LocalStorage.set('server', server)
+    // LocalStorage.set('server', server)
   },
   addServer(state, server: PeerServer) {
     if (state.servers.every(s => s.host !== server.host))
       state.servers = [...state.servers, server]
-  },
-  setHostName: (state, hostName: string) => {
-    state.hostName = hostName
   },
   setUserName: (state, userName: string) => {
     state.userName = userName
@@ -22,24 +19,20 @@ export const mutations: MutationTree<State> = {
     state.remoteUserName = userName
   },
   ready: state => {
+    console.log('ready')
     state.ready = true
   },
-  connected: state => {
+  connect: state => {
     state.connected = true
   },
-  disconnected: state => {
+  disconnect: state => {
+    state.server = null
     state.connected = false
   },
-  callStart: state => {
+  startCall: state => {
     state.calling = true
   },
-  callEnd: state => {
+  endCall: state => {
     state.calling = false
-  },
-  startLocal: state => {
-    state.local = true
-  },
-  stopLocal: state => {
-    state.local = false
   }
 }

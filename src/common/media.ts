@@ -1,4 +1,4 @@
-import { permissionsPlugin } from 'src/common'
+// import { permissionsPlugin } from 'src/common'
 import { setLocalStream, getLocalStream } from 'src/store/peer'
 
 // ? Move elsewhere?
@@ -15,14 +15,15 @@ const setNavLocalStream = async () => {
       }
     })
     setLocalStream(media)
+    return media
   } else {
-    console.log('NO MEDIA DEVICES??')
+    throw Error('NO MEDIA DEVICES??')
   }
 }
 
 // ? Move elsewhere?
 export const startCamera = async () => {
-  await setNavLocalStream()
+  return await setNavLocalStream()
   // TODO make the plugin permission work
   //   if (permissionsPlugin) {
   //     console.log('PERMISSION PLUGIN')
@@ -46,6 +47,6 @@ export const startCamera = async () => {
 
 export const stopCamera = () => {
   getLocalStream()
-    .getTracks()
+    ?.getTracks()
     .forEach(track => track.stop())
 }

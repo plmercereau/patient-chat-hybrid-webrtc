@@ -1,13 +1,15 @@
 import { Platform } from 'quasar'
 
 export interface State {
+  hostName: string
   serverStatus: 'down' | 'starting' | 'up'
-  canRun: boolean
+  embedded: boolean
 }
 
 export default function(): State {
   return {
+    hostName: 'localhost',
     serverStatus: 'down',
-    canRun: !!Platform.is.cordova
+    embedded: !!Platform.is.cordova
   }
 }
