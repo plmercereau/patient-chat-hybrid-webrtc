@@ -16,9 +16,9 @@ export default defineComponent({
 
       // * Go to the 'Chat' page when a call started, if not already.
       watch(
-        () => $store.getters['chat/calling'],
-        (calling: boolean) => {
-          if (calling && $router.currentRoute.path !== '/chat')
+        () => $store.getters['chat/ongoing'],
+        (ongoing: boolean) => {
+          if (ongoing && $router.currentRoute.path !== '/chat')
             $router.push('/chat')
         }
       )

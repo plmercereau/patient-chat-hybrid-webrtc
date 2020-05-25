@@ -19,9 +19,6 @@ const peerConfig = (server: PeerServer): Peer.PeerJSOption => {
 
 export const createPeer = (server: PeerServer) => {
   const config = peerConfig(server)
-  console.log('[LOG] create Peer')
-  console.log('[LOG] serverConfig: ', JSON.stringify(server))
-  console.log('[LOG] config: ', JSON.stringify(config))
   peer = new Peer(store.getters['chat/userName'], config)
   store.commit('chat/setServer', server)
   return peer

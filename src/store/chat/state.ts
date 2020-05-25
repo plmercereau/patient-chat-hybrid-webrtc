@@ -6,7 +6,7 @@ export interface State {
   userName: string | undefined
   ready: boolean
   connected: boolean
-  calling: boolean
+  ongoing: boolean
   remoteUserName: string | undefined
   autoCall: boolean
   autoAnswer: boolean
@@ -19,7 +19,7 @@ export default (): State => {
     userName: undefined, // TODO localstorage
     ready: false,
     connected: false,
-    calling: false,
+    ongoing: false,
     remoteUserName: undefined,
     autoCall: true,
     autoAnswer: true

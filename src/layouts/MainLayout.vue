@@ -12,9 +12,9 @@
             q-icon(name='home')
           q-item-section
             q-item-label Home
-        q-item(clickable to="/chat")
+        q-item(:clickable="ongoing" :to="ongoing ? '/chat' : undefined")
           q-item-section(avatar)
-            q-icon(name='videocam')
+            q-icon(:name="ongoing ? 'videocam' : 'videocam_off'")
           q-item-section
             q-item-label Video chat
             q-item-label(caption) Start a video chat
@@ -25,17 +25,18 @@
 
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
-import { store } from 'src/store'
 
 export default defineComponent({
   name: 'MainLayout',
-  setup() {
+  setup(_, { root: { $store } }) {
     const leftDrawerOpen = ref(false)
-    const userName = computed(() => store.getters['chat/userName'])
+    const userName = computed(() => $store.getters['chat/userName'])
+    const ongoing = computed(() => $store.getters['chat/ongoing'])
+
     const toggleDrawer = () => {
       leftDrawerOpen.value = !leftDrawerOpen.value
     }
-    return { leftDrawerOpen, userName, toggleDrawer }
+    return { leftDrawerOpen, userName, ongoing, toggleDrawer }
   }
 })
 </script>

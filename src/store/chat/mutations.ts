@@ -30,9 +30,9 @@ export const mutations: MutationTree<State> = {
     state.connected = false
   },
   startCall: state => {
-    state.calling = true
+    state.ongoing = true
   },
   endCall: state => {
-    state.calling = false
+    state.ongoing = false
   }
 }

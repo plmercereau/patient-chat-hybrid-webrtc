@@ -8,8 +8,11 @@ export const getters: GetterTree<State, {}> = {
   servers: state => state.servers,
   userName: state => state.userName,
   remoteUserName: state => state.remoteUserName,
-  calling: state => state.calling,
+  ongoing: state => state.ongoing,
   ready: state => state.ready,
   connected: state => state.connected,
-  local: state => state.server && state.server.host === 'localhost'
+  local: (state, _, __, rootGetters) =>
+    state.server &&
+    (state.server.host === 'localhost' ||
+      rootGetters['server/hostName'] === state.server.host)
 }

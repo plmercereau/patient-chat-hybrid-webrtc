@@ -1,6 +1,6 @@
 import { State } from './state'
 import { ActionTree } from 'Vuex'
-import { watch, startCamera, getHostName } from 'src/common'
+import { watch, startCamera, getHostName, stopCamera } from 'src/common'
 import { isValid, SERVICE_PORT } from 'src/common/server'
 import { Platform } from 'quasar'
 import { PeerServer } from 'src/common/types'
@@ -33,6 +33,7 @@ export const actions: ActionTree<State, {}> = {
 
     // * Connect to local peer server
     await dispatch('localConnect')
+    dispatch('watchServers')
   },
   selectFirstUp: () => {
     // TODO Finish this
@@ -60,12 +61,14 @@ export const actions: ActionTree<State, {}> = {
     //   })
     // }, 5000)
   },
-  // TODO add unwatch servers as well
-  watchServers: ({ commit }) => {
-    console.log('WATCH SERVERS') // TODO REMOVE
+  // ? add 'unwatch' as well ?
+  watchServers: ({ commit, rootGetters }) => {
     watch(({ action, service }) => {
-      console.log(`WATCH SERVERS: FOUND ${JSON.stringify(service)}`)
-      if (action === 'resolved' && isValid(service)) {
+      if (
+        action === 'resolved' &&
+        isValid(service) &&
+        service.name !== rootGetters['server/hostName']
+      ) {
         commit('addServer', {
           name: service.name,
           host: service.hostname || service.ipv4Addresses[0],
@@ -75,6 +78,7 @@ export const actions: ActionTree<State, {}> = {
       }
     })
   },
+
   // * Connect to the local PeerJS server
   localConnect: async ({ dispatch, getters }) => {
     console.log('start local')
@@ -83,27 +87,26 @@ export const actions: ActionTree<State, {}> = {
     }
   },
 
-  call: async ({ commit, getters, rootGetters }) => {
+  call: async ({ commit, getters }) => {
     try {
       const { data }: { data: string[] } = await axios.get(
-        `${getters.url}/peerjs/peers`
+        `${getters['url']}/peerjs/peers`
       )
-      const remote = data.find(id => id !== getters.userName)
+      const remote = data.find(id => id !== getters['userName'])
       if (remote) {
-        if (!getters.calling) {
+        if (!getters['ongoing']) {
           commit('setRemoteUser', remote)
           const localStream = getLocalStream() || (await startCamera())
           setCall(getPeer().call(remote, localStream))
         }
       }
     } catch (err) {
-      console.log('ERROR CONNECTING THE PEER SERVER')
       console.log(err)
-      console.log(`${rootGetters['chat/url']}/peerjs/peers`)
     }
   },
 
   endCall: ({ commit }) => {
+    stopCamera()
     const connection = getCallConnection()
     if (connection && connection.open) connection.close()
     commit('endCall')
@@ -174,10 +177,7 @@ export const actions: ActionTree<State, {}> = {
       dispatch('disconnect')
     })
 
-    if (local) {
-      console.log('What do we have to do here?') // TODO
-    }
-    if (state.autoCall) {
+    if (!local && state.autoCall) {
       // * If 2 peers connected to the server, then start a call
       await dispatch('call')
     }

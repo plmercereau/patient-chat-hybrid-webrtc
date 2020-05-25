@@ -1,20 +1,20 @@
 <template lang="pug">
   q-page.q-pa-md
     div.row.justify-center.items-start.q-gutter-md
-      q-card.text-center(v-if="ready && !calling")
+      q-card.text-center(v-if="ready && !ongoing && !local")
         q-card-section.text-h6
           div {{remoteId}}
-          q-btn.col-6(v-if="!calling" @click="call") Call
+          q-btn.col-6(v-if="!ongoing" @click="call") Call
       q-card.col-12.text-center
-        video(v-if="calling" :srcObject.prop="remoteStream" autoplay controls)
-        video.local(v-else :srcObject.prop="localStream" preload="true" :muted="!calling" autoplay)
+        video(v-if="ongoing" :srcObject.prop="remoteStream" autoplay controls)
+        video.local(v-else :srcObject.prop="localStream" preload="true" :muted="!ongoing" autoplay)
         q-card-section.text-h6
-          div(v-if="calling") {{remoteId}}
+          div(v-if="ongoing") {{remoteId}}
           div(v-else-if="local") You
-        q-card-section(v-if="calling")
+        q-card-section(v-if="ongoing")
           q-btn.col-6(@click="end") End call
-      q-card.col-4.text-center(v-if="calling")
-        video.local(:srcObject.prop="localStream" preload="true" :muted="calling" autoplay)
+      q-card.col-4.text-center(v-if="ongoing")
+        video.local(:srcObject.prop="localStream" preload="true" :muted="ongoing" autoplay)
         q-card-section.text-h6 You
 
 </template>
@@ -33,10 +33,10 @@ export default defineComponent({
       () => $store.getters['chat/remoteUserName']
     )
     const ready = computed<boolean>(() => $store.getters['chat/ready'])
-    const calling = computed<boolean>(() => $store.getters['chat/calling'])
+    const ongoing = computed<boolean>(() => $store.getters['chat/ongoing'])
 
     const localStream = ref<MediaStream | null>(getLocalStream())
-    const remoteStream = computed(() => calling.value && getRemoteStream())
+    const remoteStream = computed(() => ongoing.value && getRemoteStream())
 
     const call = () => $store.dispatch('chat/call')
     const end = () => $store.dispatch('chat/disconnect')
@@ -51,15 +51,9 @@ export default defineComponent({
       }
     )
 
-    // * Automatically starts the video call when someone else is connected to the same server
-    // const poll = setInterval(() => {
-    //   console.log('poll...')
-    //   !$store.getters['chat/calling'] && $store.dispatch('chat/call')
-    // }, 5000)
-
     return {
       ready,
-      calling,
+      ongoing,
       call,
       end,
       local,
