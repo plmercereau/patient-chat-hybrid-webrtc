@@ -13,8 +13,8 @@
           div(v-else-if="local") You
         q-card-section(v-if="calling")
           q-btn.col-6(@click="end") End call
-      q-card.col-4.text-center(v-if="calling && local")
-        video.local(:srcObject.prop="localStream" preload="true" :muted="calling && local" autoplay)
+      q-card.col-4.text-center(v-if="calling")
+        video.local(:srcObject.prop="localStream" preload="true" :muted="calling" autoplay)
         q-card-section.text-h6 You
 
 </template>

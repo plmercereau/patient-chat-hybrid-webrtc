@@ -2,13 +2,28 @@
 
 import Peer from 'peerjs'
 import { store } from '.'
+import { PeerServer } from 'src/common/types'
 let peer: Peer
 
-export const createPeer = (
-  id: string | undefined,
-  peerConfig: Peer.PeerJSOption
-) => {
-  peer = new Peer(id, peerConfig)
+const peerConfig = (server: PeerServer): Peer.PeerJSOption => {
+  if (process.env.DEV) {
+    return {
+      host: '/',
+      port: parseInt(location.port),
+      path: `/servers/${server.host}/${server.port}`,
+      secure: true,
+      debug: 1
+    }
+  } else return server
+}
+
+export const createPeer = (server: PeerServer) => {
+  const config = peerConfig(server)
+  console.log('[LOG] create Peer')
+  console.log('[LOG] serverConfig: ', JSON.stringify(server))
+  console.log('[LOG] config: ', JSON.stringify(config))
+  peer = new Peer(store.getters['chat/userName'], config)
+  store.commit('chat/setServer', server)
   return peer
 }
 
@@ -22,11 +37,11 @@ export const setLocalStream = (stream: MediaStream) => {
 
 let remoteStream: MediaStream | null = null //= new MediaStream()
 export const getRemoteStream = () => remoteStream
-export const setRemoteStream = (stream: MediaStream) => {
+export const setRemoteStream = (stream: MediaStream | null) => {
   remoteStream = stream
 }
 
-let callConnection: Peer.MediaConnection
+let callConnection: Peer.MediaConnection | null = null
 export const getCallConnection = () => callConnection
 export const setCallConnection = (conn: Peer.MediaConnection) => {
   callConnection = conn
@@ -47,6 +62,6 @@ export const setCall = (call: Peer.MediaConnection): void => {
     // alert('The videocall has finished')
     console.log('The videocall has finished')
     store.dispatch('chat/disconnect')
-    setRemoteStream(new MediaStream())
+    setRemoteStream(null)
   })
 }

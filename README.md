@@ -74,10 +74,21 @@ The Express server embedded in the Android app serves a version of the static SP
   -
 - Cons
   - Should install the app everywhere. The need of internet to get access to the Google Playstore can be mitigated in serving the apk on the Express server for download. The link could be available on the client side through a QR code.
+  - Not able to serve the application through a captive portal (but it would have most likely required root access)
 
 ## TODO
 
-### Top priorities
+- [ ] activate Android permissions
+- [ ] hide own local server from the list of servers
+- [ ] put the service discovery / service publishing / service information (e.g. online, busy...) on the server side
+- [ ] let the Android app set a Wifi hotspot
+- [ ] Double check if server works correclty in background. Seems ok.
+  - [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
+- [ ] send the server url by SMS
+- [ ] print the server url on a QR code
+- [ ] publish to the app store
+
+## Not applicable anymore
 
 - SSL / unable to run video in insecure contexts
   - Temporary workaround: whitelist http://<hostname>:3000 by opening chrome://flags and search for unsafely-treat-insecure-origin-as-secure
@@ -88,16 +99,7 @@ The Express server embedded in the Android app serves a version of the static SP
   - https://w3c.github.io/webappsec-secure-contexts/
   - https://medium.com/@bramus/on-secure-contexts-in-firefox-https-for-local-development-and-a-potential-nice-gesture-by-cea4ab4903a
   - Let's encrypt would require an internet connection
-
-### Other
-
-- let the Android app set a Wifi hotspot
 - serve the SPA through a captive portal (may require root access)
 - change the device hostname (may require root access)
 - change the express server port to 80 (requires root access)
 - find a way to use mDNS/zeroconf service in the browser
-- Double check if server works correclty in background. Seems ok.
-  - [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
-- send the server url by SMS
-- print the server url on a QR code
-- publish to the app store

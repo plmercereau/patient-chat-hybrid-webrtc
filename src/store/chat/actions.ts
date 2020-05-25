@@ -1,7 +1,7 @@
 import { State } from './state'
 import { ActionTree } from 'Vuex'
-import { watch, startCamera } from 'src/common'
-import { isValid } from 'src/common/server'
+import { watch, startCamera, getHostName } from 'src/common'
+import { isValid, SERVICE_PORT } from 'src/common/server'
 import { Platform } from 'quasar'
 import { PeerServer } from 'src/common/types'
 import {
@@ -14,13 +14,13 @@ import {
 import axios from 'axios'
 
 export const actions: ActionTree<State, {}> = {
-  load: async ({ dispatch, state, commit, rootGetters }) => {
+  load: async ({ dispatch, commit, rootGetters, getters }) => {
     console.log('load')
     await dispatch('server/start', undefined, { root: true })
 
     const hostName = rootGetters['server/hostName']
     // ? As an initial state / getter in the store?
-    if (!state.userName) {
+    if (!getters['userName']) {
       commit(
         'setUserName',
         Platform.is.cordova
@@ -105,40 +105,38 @@ export const actions: ActionTree<State, {}> = {
 
   endCall: ({ commit }) => {
     const connection = getCallConnection()
-    if (connection.open) getCallConnection().close()
+    if (connection && connection.open) connection.close()
     commit('endCall')
   },
 
   // * Disconnect from the current PeerJS server
   disconnect: ({ commit, getters, dispatch }) => {
-    if (getters['calling']) {
-      dispatch('endCall')
-    }
-    if (getters['connected']) {
-      const peer = getPeer()
-      if (peer) peer.disconnect()
-      commit('disconnect')
-    }
+    dispatch('endCall')
+    const peer = getPeer()
+    if (peer) peer.disconnect()
+    commit('disconnect')
   },
 
   // * Connect to the given PeerJS server, or the local server if none given
   connect: async (
-    { state, commit, dispatch, rootGetters, getters },
-    server?: PeerServer
+    { state, commit, dispatch, getters },
+    newServer?: PeerServer
   ) => {
-    const local = !server
-    const config: PeerServer = local
-      ? rootGetters['server/localConfig']
-      : (server as PeerServer)
+    const local = !newServer
+    if (!newServer)
+      newServer = {
+        name: await getHostName(),
+        host: await getHostName(),
+        port: SERVICE_PORT,
+        secure: false
+      }
 
-    if (config !== state.server) {
-      // TODO check if it works
-      console.log('new server')
+    const currentServer = getters['server']
+    if (currentServer && currentServer.host !== newServer.host) {
       dispatch('disconnect')
     }
 
-    commit('setServer', config)
-    const peer = createPeer(state.userName, getters['peerConfig'])
+    const peer = createPeer(newServer)
 
     peer.on('open', () => {
       console.log('open')

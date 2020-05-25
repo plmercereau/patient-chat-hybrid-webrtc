@@ -9,11 +9,5 @@ export const getters: GetterTree<State, {}> = {
   down: state => state.serverStatus === 'down',
   embedded: state => state.embedded,
   publicUrl: ({ hostName }, { ready }) =>
-    ready && `http://${hostName}:${SERVICE_PORT}`,
-  localConfig: state => ({
-    name: state.hostName,
-    host: 'localhost',
-    port: SERVICE_PORT,
-    secure: false
-  })
+    ready && `http://${hostName}:${SERVICE_PORT}`
 }
