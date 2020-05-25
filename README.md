@@ -71,22 +71,29 @@ The Express server embedded in the Android app serves a version of the static SP
 
 - Pros
   - ability to self-discover available server(s) in the netword with zeroconf
-  -
+  - As a consequence, any device can run its own server, and is connected to it while waiting for the call. A second connection to the server triggers the call.
 - Cons
   - Should install the app everywhere. The need of internet to get access to the Google Playstore can be mitigated in serving the apk on the Express server for download. The link could be available on the client side through a QR code.
   - Not able to serve the application through a captive portal (but it would have most likely required root access)
 
 ## TODO
 
-- [ ] activate Android permissions
-- [ ] hide own local server from the list of servers
+- [ ] set Android permissions
+- [x] hide own local server from the list of servers
+- [ ] build a "stable" apk to test between devices and share with the team
+- [ ] "calling" spinner
+- [ ] improve disconnection UX
 - [ ] put the service discovery / service publishing / service information (e.g. online, busy...) on the server side
 - [ ] let the Android app set a Wifi hotspot
+- [ ] let the Android app select a Wifi hostpot?
 - [ ] Double check if server works correclty in background. Seems ok.
   - [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
-- [ ] send the server url by SMS
-- [ ] print the server url on a QR code
+- [ ] Share the apk. Options:
+  - send the server url by SMS
+  - print the server url on a QR code
 - [ ] publish to the app store
+- [ ] build and publish with GH Actions or another CI tool
+- [ ] Electron app
 
 ## Not applicable anymore
 
