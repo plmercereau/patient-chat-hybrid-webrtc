@@ -69,19 +69,29 @@ quasar build
 
 ## How it works
 
-The Android app embeds a TURN server (PeerJS running on Node Express) that acts as a WebRTC broker client.
+### Frontend
 
-This server is then published as a Bonjour/Zeroconf/mDNS service.
+The frontend is coded in [Vue](https://vuejs.org/) through the [Quasar framework](https://quasar.dev/).
+
+Quasar allows to define multiple destination platforms: Single Page Applications, Progressive Web Apps, Android or IOS through Apache's [Cordova](https://cordova.apache.org/), OSX or Windows though [Electron](https://www.electronjs.org/)...
+
+This project focuses on the use of Cordova to deliver an Android app, but also generates an SPA for developement and testing purposes.
+
+### Backend
+
+The Android app embeds a [NodeJS environment](https://code.janeasystems.com/nodejs-mobile). It then runs an [HTTP Express server](https://expressjs.com/), that includes a [PeerJS TURN server](https://github.com/peers/peerjs-server) that acts as a WebRTC client broker.
+
+This backend server is then published as a Bonjour/Zeroconf/mDNS service.
 
 By default, the Android user connects to its own PeerJS server and is listening to any call.
 
 Any client can then get the list of available peers though DNS Service Discovery.
 
-The user picks one server from this list, checks if there is already someone connected to it, then connects and call the other person though WebRTC.
+The user picks one server from this list, checks if there is already someone connected to it, then connects with the [PeerJS client](https://peerjs.com/) and call the other person though [WebRTC](https://webrtc.org/).
 
 When the call ends, the client disconnects from the remote server and connects again to its own local server, so it waits for calls.
 
-### Why not Android "server" + SPA "client" ?
+### Why not a single Android "server" app + SPA "client" ?
 
 We could have used the embedded Node Express server to serve a static SPA app, so other users would not have needed to install an Android app. However:
 
@@ -114,6 +124,7 @@ The main caveats for using an Android app everywhere is the need of the internet
 
 ### Later
 
+- [ ] adjust video/audio quality to the existing bandwidth, latency, etc.
 - [ ] "calling" prompt / put the app in the foreground when running in the background
 - [ ] let the Android app set a Wifi hotspot
 - [ ] let the Android app select a Wifi hostpot?
