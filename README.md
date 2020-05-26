@@ -1,12 +1,21 @@
-# Video Chat (videochat)
-
-Local Video Chat
+# Local Video Chat
 
 ## Development
 
 ### Prerequisites
 
+For Web developement, you will need Node to be installed.
+
+For Android developement, you will need the Android SDK, the Android NDK, etc.
+
+TODO: complete this
+
 ### Clone
+
+```bash
+git clone https://github.com/plmercereau/patient-chat-hybrid-webrtc
+cd patient-chat-hybrid-webrtc
+```
 
 ### Install dependencies
 
@@ -14,6 +23,7 @@ Local Video Chat
 yarn
 cd server
 npm install
+cd ..
 ```
 
 ### Android
@@ -24,14 +34,24 @@ TODO: Put the following tasks into Corvova hooks.
 - `cd src-cordova/www && ln -sFf ../../server nodejs-project`
 - `cd server && npm install``
 
-### Start the app in development mode
+### Start the app in 'web' mode
 
-In two separate consoles:
+You have to run three services in parallel:
+
+1. The Express server
 
 ```bash
 cd server
 npm run dev
 ```
+
+2. Its mDNS publication
+
+```bash
+dns-sd -R <service_name> _http._tcp. local. 3000 name=patientchat
+```
+
+3. The Web client (served over WebPack)
 
 ```bash
 quasar dev
@@ -45,54 +65,67 @@ quasar dev
 quasar build
 ```
 
-<!-- ### Copy web version to the Express server
-
-```bash
-cp -R dist src-cordova/www/client`
-``` -->
-
 ### Build android version
 
-## Architecture options
+## How it works
 
-In any case, the Android app embeds a TURN server (PeerJS) that acts as a WebRTC broker client
+The Android app embeds a TURN server (PeerJS running on Node Express) that acts as a WebRTC broker client.
 
-### Android "server" + SPA "client
+This server is then published as a Bonjour/Zeroconf/mDNS service.
 
-The Express server embedded in the Android app serves a version of the static SPA app.
+By default, the Android user connects to its own PeerJS server and is listening to any call.
 
-- Pros
-  - no need to install anything on client side
-- Cons
-  - https is required to get `getMediaDevice()` working, and an SSL certificate can't be obtained without internet (e.g. Let's Encrypt). Only self-signed certificates are then possible, but will raise an alert on the client that the site is not secure, and will possibly still flag context as unsecure and therefore block video. It may then be a deal breaker.
-  - the client will need to enter the server path to start the application. It can be mitigated in setting a SR-code / SMS sending system to get the link, plus to install the client as a PWA
+Any client can then get the list of available peers though DNS Service Discovery.
 
-### Android everywhere
+The user picks one server from this list, checks if there is already someone connected to it, then connects and call the other person though WebRTC.
 
-- Pros
-  - ability to self-discover available server(s) in the netword with zeroconf
-  - As a consequence, any device can run its own server, and is connected to it while waiting for the call. A second connection to the server triggers the call.
-- Cons
-  - Should install the app everywhere. The need of internet to get access to the Google Playstore can be mitigated in serving the apk on the Express server for download. The link could be available on the client side through a QR code.
-  - Not able to serve the application through a captive portal (but it would have most likely required root access)
+When the call ends, the client disconnects from the remote server and connects again to its own local server, so it waits for calls.
+
+### Why not Android "server" + SPA "client?
+
+We could have used the embedded Node Express server to serve a static SPA app, so other users would not have needed to install an Android app. However:
+
+- `https` is required to get `getMediaDevice()` working, and an SSL certificate can't be obtained without internet (e.g. Let's Encrypt). Only self-signed certificates are then possible, but will raise an alert on the client that the site is not secure, and will possibly still flag context as unsecure and therefore block video.
+- Service Discovery through Bonjour/Zeroconf would not have been available. The client would have needed to enter the server path to start the application. It could have been mitigated by setting a QR-code / SMS sending system to get the link, plus in installing the client as a PWA
+- If the user running the initial server leaves, everyone in the network is disconnected. While it is not a problem in the case of a two-users-only network, this would become messy if more people use the same network.
+
+The main caveats for using an Android app everywhere is the need of the internet to install the app from the Google Playstore or any other place. This can be mitigated in serving the apk on the Express server for download (e.g. through a QR-code or an SMS), or finding other ways to share the file though a local network. The link could be available on the client side through a QR code.
 
 ## TODO
 
-- [ ] set Android permissions
+### Prototype
+
+- [ ] Pick the right permissions
+- [ ] Prompt Android permissions
 - [x] hide own local server from the list of servers
 - [ ] build a "stable" apk to test between devices and share with the team
-- [ ] "calling" spinner
-- [ ] improve disconnection UX
-- [ ] put the service discovery / service publishing / service information (e.g. online, busy...) on the server side
-- [ ] let the Android app set a Wifi hotspot
-- [ ] let the Android app select a Wifi hostpot?
 - [ ] Double check if server works correclty in background. Seems ok.
   - [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
+
+### Strengthening
+
+- [ ] improve disconnection UX: send a 'end call' event, instead of waiting for the connection to be lost
+- [ ] change the server port from 3000 to something else
+- [ ] "calling" spinner
+- [ ] simpler navigation bar
+- [ ] custom video controls
+- [ ] better local video presentation, e.g. bottom-right of the remote video
+- [ ] put the service discovery / service publishing / service information (e.g. online, busy...) on the server side
+
+### Later
+
+- [ ] "calling" prompt / put the app in the foreground when running in the background
+- [ ] let the Android app set a Wifi hotspot
+- [ ] let the Android app select a Wifi hostpot?
 - [ ] Share the apk. Options:
   - send the server url by SMS
   - print the server url on a QR code
 - [ ] publish to the app store
 - [ ] build and publish with GH Actions or another CI tool
+
+### Nice to try
+
+- [ ] iOS app
 - [ ] Electron app
 
 ## Not applicable anymore
