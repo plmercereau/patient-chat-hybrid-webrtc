@@ -73,7 +73,7 @@ quasar build
 
 The frontend is coded in [Vue](https://vuejs.org/) through the [Quasar framework](https://quasar.dev/).
 
-Quasar allows to define multiple destination platforms: Single Page Applications, Progressive Web Apps, Android or IOS through Apache's [Cordova](https://cordova.apache.org/), OSX or Windows though [Electron](https://www.electronjs.org/)...
+Quasar allows to define multiple destination platforms: Single Page Applications, Progressive Web Apps, Android or IOS through Apache's [Cordova](https://cordova.apache.org/) or Ionic's [Capacitor](https://capacitor.ionicframework.com/), OSX or Windows though [Electron](https://www.electronjs.org/)...
 
 This project focuses on the use of Cordova to deliver an Android app, but also generates an SPA for developement and testing purposes.
 
