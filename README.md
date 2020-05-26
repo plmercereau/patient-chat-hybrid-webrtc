@@ -81,7 +81,7 @@ The user picks one server from this list, checks if there is already someone con
 
 When the call ends, the client disconnects from the remote server and connects again to its own local server, so it waits for calls.
 
-### Why not Android "server" + SPA "client?
+### Why not Android "server" + SPA "client" ?
 
 We could have used the embedded Node Express server to serve a static SPA app, so other users would not have needed to install an Android app. However:
 
