@@ -38,7 +38,7 @@ The main caveats for using an Android app everywhere is the need of the internet
 
 ### Prerequisites
 
-For Web developement, you will need Node to be installed.
+You need Node to be installed.
 
 For Android developement, you will need the Android SDK, the Android NDK, etc.
 
