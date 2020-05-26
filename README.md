@@ -1,5 +1,39 @@
 # Local Video Chat
 
+## How it works
+
+### Frontend
+
+The frontend is coded in [Vue](https://vuejs.org/) through the [Quasar framework](https://quasar.dev/).
+
+Quasar allows to define multiple destination platforms: Single Page Applications, Progressive Web Apps, Android or IOS through Apache's [Cordova](https://cordova.apache.org/) or Ionic's [Capacitor](https://capacitor.ionicframework.com/), OSX or Windows though [Electron](https://www.electronjs.org/)...
+
+This project focuses on the use of Cordova to deliver an Android app, but also generates an SPA for developement and testing purposes.
+
+### Backend
+
+The Android app embeds a [NodeJS environment](https://code.janeasystems.com/nodejs-mobile). It then runs an [HTTP Express server](https://expressjs.com/), that includes a [PeerJS TURN server](https://github.com/peers/peerjs-server) that acts as a WebRTC client broker.
+
+This backend server is then published as a Bonjour/Zeroconf/mDNS service.
+
+By default, the Android user connects to its own PeerJS server and is listening to any call.
+
+Any client can then get the list of available peers though DNS Service Discovery.
+
+The user picks one server from this list, checks if there is already someone connected to it, then connects with the [PeerJS client](https://peerjs.com/) and call the other person though [WebRTC](https://webrtc.org/).
+
+When the call ends, the client disconnects from the remote server and connects again to its own local server, so it waits for calls.
+
+### Why not a single Android "server" app + SPA "client" ?
+
+We could have used the embedded Node Express server to serve a static SPA app, so other users would not have needed to install an Android app. However:
+
+- `https` is required to get `getMediaDevice()` working, and an SSL certificate can't be obtained without internet (e.g. Let's Encrypt). Only self-signed certificates are then possible, but will raise an alert on the client that the site is not secure, and will possibly still flag context as unsecure and therefore block video.
+- Service Discovery through Bonjour/Zeroconf would not have been available. The client would have needed to enter the server path to start the application. It could have been mitigated by setting a QR-code / SMS sending system to get the link, plus in installing the client as a PWA
+- If the user running the initial server leaves, everyone in the network is disconnected. While it is not a problem in the case of a two-users-only network, this would become messy if more people use the same network.
+
+The main caveats for using an Android app everywhere is the need of the internet to install the app from the Google Playstore or any other place. This can be mitigated in serving the apk on the Express server for download (e.g. through a QR-code or an SMS), or finding other ways to share the file though a local network. The link could be available on the client side through a QR code.
+
 ## Development
 
 ### Prerequisites
@@ -66,40 +100,6 @@ quasar build
 ```
 
 ### Build android version
-
-## How it works
-
-### Frontend
-
-The frontend is coded in [Vue](https://vuejs.org/) through the [Quasar framework](https://quasar.dev/).
-
-Quasar allows to define multiple destination platforms: Single Page Applications, Progressive Web Apps, Android or IOS through Apache's [Cordova](https://cordova.apache.org/) or Ionic's [Capacitor](https://capacitor.ionicframework.com/), OSX or Windows though [Electron](https://www.electronjs.org/)...
-
-This project focuses on the use of Cordova to deliver an Android app, but also generates an SPA for developement and testing purposes.
-
-### Backend
-
-The Android app embeds a [NodeJS environment](https://code.janeasystems.com/nodejs-mobile). It then runs an [HTTP Express server](https://expressjs.com/), that includes a [PeerJS TURN server](https://github.com/peers/peerjs-server) that acts as a WebRTC client broker.
-
-This backend server is then published as a Bonjour/Zeroconf/mDNS service.
-
-By default, the Android user connects to its own PeerJS server and is listening to any call.
-
-Any client can then get the list of available peers though DNS Service Discovery.
-
-The user picks one server from this list, checks if there is already someone connected to it, then connects with the [PeerJS client](https://peerjs.com/) and call the other person though [WebRTC](https://webrtc.org/).
-
-When the call ends, the client disconnects from the remote server and connects again to its own local server, so it waits for calls.
-
-### Why not a single Android "server" app + SPA "client" ?
-
-We could have used the embedded Node Express server to serve a static SPA app, so other users would not have needed to install an Android app. However:
-
-- `https` is required to get `getMediaDevice()` working, and an SSL certificate can't be obtained without internet (e.g. Let's Encrypt). Only self-signed certificates are then possible, but will raise an alert on the client that the site is not secure, and will possibly still flag context as unsecure and therefore block video.
-- Service Discovery through Bonjour/Zeroconf would not have been available. The client would have needed to enter the server path to start the application. It could have been mitigated by setting a QR-code / SMS sending system to get the link, plus in installing the client as a PWA
-- If the user running the initial server leaves, everyone in the network is disconnected. While it is not a problem in the case of a two-users-only network, this would become messy if more people use the same network.
-
-The main caveats for using an Android app everywhere is the need of the internet to install the app from the Google Playstore or any other place. This can be mitigated in serving the apk on the Express server for download (e.g. through a QR-code or an SMS), or finding other ways to share the file though a local network. The link could be available on the client side through a QR code.
 
 ## TODO
 
