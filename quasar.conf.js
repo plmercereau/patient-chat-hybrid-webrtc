@@ -106,26 +106,6 @@ module.exports = configure(function(ctx) {
       port: 8080,
       open: true, // opens browser window automatically
       proxy: [
-        // {
-        //   // ! Tweak Webpack devServer to proxy any http url into https://webpackserver/host/port/<URL>
-        //   context: ['/servers'],
-        //   target: 'http://localhost:3000',
-        //   changeOrigin: true,
-        //   router: function(req) {
-        //     console.log('HTTP')
-        //     const [, , host, port] = req.url.split('/')
-        //     // return `http://${host}:${port}`
-        //     return {
-        //       protocol: 'http:', // The : is required
-        //       host,
-        //       port: parseInt(port)
-        //     }
-        //   },
-        //   pathRewrite: function(path, req) {
-        //     return '/' + path.replace(/\/servers\/.+\/\d+\//, '')
-        //   },
-        //   ws: false
-        // },
         {
           // ! Tweak Webpack devServer to proxy any http url into https://webpackserver/host/port/<URL>
           context: ['/servers'],
@@ -139,7 +119,7 @@ module.exports = configure(function(ctx) {
               port: parseInt(port)
             }
           },
-          pathRewrite: function(path, req) {
+          pathRewrite: function(path) {
             return '/' + path.replace(/\/servers\/.+\/\d+\//, '')
           },
           ws: true

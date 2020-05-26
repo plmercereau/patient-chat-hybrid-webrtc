@@ -113,7 +113,7 @@ export const actions: ActionTree<State, {}> = {
   },
 
   // * Disconnect from the current PeerJS server
-  disconnect: ({ commit, getters, dispatch }) => {
+  disconnect: ({ commit, dispatch }) => {
     dispatch('endCall')
     const peer = getPeer()
     if (peer) peer.disconnect()
