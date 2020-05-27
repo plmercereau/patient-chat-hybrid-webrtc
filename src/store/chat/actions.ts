@@ -4,13 +4,7 @@ import { watch, startCamera, getHostName, stopCamera } from 'src/common'
 import { isValid, SERVICE_PORT } from 'src/common/server'
 import { Platform } from 'quasar'
 import { PeerServer } from 'src/common/types'
-import {
-  createPeer,
-  getLocalStream,
-  setCall,
-  getPeer,
-  getCallConnection
-} from '../peer'
+import { createPeer, setCall, getPeer, getCallConnection } from '../peer'
 import axios from 'axios'
 
 export const actions: ActionTree<State, {}> = {
@@ -96,7 +90,7 @@ export const actions: ActionTree<State, {}> = {
       if (remote) {
         if (!getters['ongoing']) {
           commit('setRemoteUser', remote)
-          const localStream = getLocalStream() || (await startCamera())
+          const localStream = await startCamera()
           setCall(getPeer().call(remote, localStream))
         }
       }
@@ -148,8 +142,9 @@ export const actions: ActionTree<State, {}> = {
     })
 
     peer.on('connection', connection => {
+      // ? Not really used until now. We'll maybe need to implement this for adequate 'disconnection' event
       console.log('peer connection')
-      commit('setRemoteUser', connection.peer) // TODODODODODODODODOODODODOOD
+      commit('setRemoteUser', connection.peer)
       commit('connect')
     })
 
