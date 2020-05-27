@@ -12,7 +12,7 @@ This project focuses on the use of Cordova to deliver an Android app, but also g
 
 ### Backend
 
-The Android app embeds a [NodeJS environment](https://code.janeasystems.com/nodejs-mobile). It then runs an [HTTP Express server](https://expressjs.com/), that includes a [PeerJS server](https://github.com/peers/peerjs-server) that acts as a WebRTC [TURN server](https://webrtc.org/getting-started/turn-server).
+The Android app embeds a [NodeJS environment](https://code.janeasystems.com/nodejs-mobile). It then runs an [HTTP Express server](https://expressjs.com/), that includes a [PeerJS server](https://github.com/peers/peerjs-server) that acts as a WebRTC STUN server.
 
 This backend server is then published as a Bonjour/Zeroconf/mDNS service.
 
