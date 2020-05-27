@@ -1,3 +1,5 @@
+import { store } from 'src/store'
+
 interface NodeJSPlugin {
   start: (path: string, callback: (error: Error) => void) => void
   channel: {
@@ -14,7 +16,9 @@ export const startServer = () =>
   new Promise<void>((resolve, reject) => {
     if (!nodejs) resolve()
     else {
-      nodejs.channel.on('ready', () => resolve())
+      nodejs.channel.on('ready', () => {
+        store.dispatch('server/ready')
+      })
       nodejs.start('main.js', err => {
         if (err) {
           console.log(err)

@@ -7,13 +7,9 @@ log('Main NodeJS script')
 // Send a message to Cordova.
 cordova.channel.send('main.js loaded')
 
-// Post an event with a message.
-cordova.channel.post('started', 'main.js loaded')
-
 try {
   server(3000, () => {
     cordova.channel.post('ready')
-    log('Express server set.')
   })
 } catch (error) {
   log('Error starting Express')
