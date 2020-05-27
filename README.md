@@ -63,10 +63,43 @@ cd ..
 ### Android
 
 TODO: Put the following tasks into Corvova hooks.
+See:[Steps to patch the cordova-nodejs-module](https://github.com/JaneaSystems/nodejs-mobile/issues/239)
 
-- [Steps to patch the cordova-nodejs-module](https://github.com/JaneaSystems/nodejs-mobile/issues/239)
-- `cd src-cordova/www && ln -sFf ../../server nodejs-project`
-- `cd server && npm install``
+https://medium.com/@ivancse.58/how-to-resolve-no-toolchains-found-in-the-ndk-toolchains-folder-for-abi-with-prefix-b37086380193
+https://stackoverflow.com/questions/32601116/not-able-to-test-cordova-android-app-in-device-attached-via-usb
+
+```bash
+cd src-cordova
+npm install --save nodejs-mobile-cordova
+cp setup/plugin.xml node_modules/nodejs-mobile-cordova/
+cordova add platform android
+cd www
+ln -sFf ../../server nodejs-project
+cd nodejs-project
+npm install
+cd ../..
+echo "ext.cdvMinSdkVersion = 21" > platforms/android/build-extras.gradle
+cd ..
+quasar build -m android
+chmod +x platforms/android/gradlew
+
+```
+
+- Check `src-cordova/plugins/android.json`. It should have:
+
+```json
+ "installed_plugins": {
+    ...
+    "nodejs-mobile-cordova": {
+      "PACKAGE_NAME": "plus.platy.chat.app"
+    }
+  }
+```
+
+#### Android 5
+
+Update Android System Webview.
+See: [https://developer.chrome.com/multidevice/webview/overview](https://developer.chrome.com/multidevice/webview/overview)
 
 ### Start the app in 'web' mode
 
@@ -154,3 +187,30 @@ quasar build
 - change the device hostname (may require root access)
 - change the express server port to 80 (requires root access)
 - find a way to use mDNS/zeroconf service in the browser
+
+<!-- ## Other
+
+### Removed cordova-plugin-android-wifi-manager (requires Android SDK 23)
+
+https://github.com/kapetan/cordova-plugin-android-wifi-manager
+
+### Possibly useful permissions
+
+https://developer.android.com/reference/android/Manifest.permission
+
+- Companion App?
+- CHANGE_NETWORK_STATE
+- MODIFY_AUDIO_SETTINGS
+- PACKAGE_USAGE_STATS
+- QUERY_ALL_PACKAGES
+- READ_PRECISE_PHONE_STATE
+- READ_PHONE_STATE
+- READ_SMS
+- RECEIVE_SMS
+- SEND_SMS
+- SYSTEM_ALERT_WINDOW
+- UPDATE_DEVICE_STATS
+- USE_FULL_SCREEN_INTENT
+- VIBRATE
+- WAKE_LOCK
+- WRITE_EXTERNAL_STORAGE -->

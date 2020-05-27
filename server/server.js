@@ -3,6 +3,7 @@ var cors = require('cors')
 const path = require('path')
 const { ExpressPeerServer } = require('peer')
 const log = require('./log')
+log('Express Server Loader')
 
 module.exports = function(
   port = 3000,
@@ -10,6 +11,7 @@ module.exports = function(
     log(`App listening at http://0.0.0.0:${port}`)
   }
 ) {
+  log('Starting Express')
   const app = express()
   app.use(cors())
   app.get('/healthz', (req, res) => res.status(200).send('OK'))
@@ -24,10 +26,10 @@ module.exports = function(
     path: '/',
     allow_discovery: true
   })
-  //   log('Peer server created.')
+  log('Peer server created.')
 
   app.use('/', peerServer)
-  //   log('PeerJS middleware loaded.')
+  log('PeerJS middleware loaded.')
 
   //   const router = express.Router()
   //   router.get('/turn', (req, res) => {

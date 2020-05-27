@@ -482,5 +482,5 @@ interface PermissionPlugin {
 }
 
 export const permissionsPlugin = Platform.is.cordova
-  ? (cordova.plugins as CordovaPlugins).permissions
+  ? (cordova.plugins as CordovaPlugins)?.permissions
   : undefined

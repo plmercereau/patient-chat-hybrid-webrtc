@@ -55,7 +55,7 @@ const DEFAULT_TYPE = '_http._tcp.'
 const DEFAULT_DOMAIN = 'local.'
 
 export const zeroconfPlugin = Platform.is.cordova
-  ? (cordova.plugins as CordovaPlugins).zeroconf
+  ? (cordova.plugins as CordovaPlugins)?.zeroconf
   : undefined
 
 if (zeroconfPlugin) zeroconfPlugin.registerAddressFamily = 'ipv4'

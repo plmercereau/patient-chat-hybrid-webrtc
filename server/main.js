@@ -3,7 +3,7 @@
 const cordova = require('cordova-bridge')
 const log = require('./log')
 const server = require('./server')
-
+log('Main NodeJS script')
 // Send a message to Cordova.
 cordova.channel.send('main.js loaded')
 

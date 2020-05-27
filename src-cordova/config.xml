@@ -25,15 +25,16 @@
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <uses-permission android:name="android.permission.VIDEO_CAPTURE" />
             <uses-permission android:name="android.permission.AUDIO_CAPTURE" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-feature android:name="android.hardware.camera" android:required="true" />
             <uses-feature android:name="android.hardware.camera.autofocus" />
-        </custom-config-file>
-        <custom-config-file parent="./application" target="AndroidManifest.xml">
-            <uses-library android:name="org.apache.http.legacy" android:required="false" />
         </custom-config-file>
         <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
             <application android:usesCleartextTraffic="true" />
         </edit-config>
+        <custom-config-file parent="./application" target="AndroidManifest.xml">
+            <uses-library android:name="org.apache.http.legacy" android:required="false" />
+        </custom-config-file>
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
