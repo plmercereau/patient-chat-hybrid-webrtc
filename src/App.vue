@@ -7,12 +7,15 @@
 <script lang="ts">
 import { defineComponent, onMounted, watch } from '@vue/composition-api'
 import { PeerServer } from './common/types'
+import { checkPermissions } from './common'
 
 export default defineComponent({
   name: 'App',
   setup(_, { root: { $router, $store } }) {
-    onMounted(async () => {
-      await $store.dispatch('chat/load')
+    onMounted(() => {
+      checkPermissions().then(() => {
+        $store.dispatch('chat/load')
+      })
 
       // * Go to the 'Chat' page when a call started, if not already.
       watch(
@@ -29,6 +32,7 @@ export default defineComponent({
         () => $store.getters['chat/server'],
         (newServer: PeerServer | null, oldServer: PeerServer | null) => {
           if (!newServer && !!oldServer) {
+            console.log('')
             $store.dispatch('chat/localConnect')
             if ($router.currentRoute.path !== '/') $router.push('/')
           }

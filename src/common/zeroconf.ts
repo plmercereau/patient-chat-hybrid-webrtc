@@ -2,6 +2,7 @@ import { Platform } from 'quasar'
 import { Service } from './types'
 
 interface CordovaPlugins {
+  diagnostic?: unknown
   zeroconf: ZeroConfPlugin
 }
 interface ServiceResult {
@@ -53,19 +54,24 @@ interface ZeroConfPlugin {
 
 const DEFAULT_TYPE = '_http._tcp.'
 const DEFAULT_DOMAIN = 'local.'
+const getPlugin = () =>
+  Platform.is.cordova
+    ? (cordova.plugins as CordovaPlugins)?.zeroconf
+    : undefined
 
-export const zeroconfPlugin = Platform.is.cordova
-  ? (cordova.plugins as CordovaPlugins)?.zeroconf
-  : undefined
+export const zeroconfPlugin = getPlugin()
 
 if (zeroconfPlugin) zeroconfPlugin.registerAddressFamily = 'ipv4'
 
 export const getHostName = () =>
   new Promise<string>((resolve, reject) => {
-    if (!zeroconfPlugin) resolve('localhost')
+    const plugin = Platform.is.cordova
+      ? (cordova.plugins as CordovaPlugins)?.zeroconf
+      : undefined
+    if (!plugin) resolve('localhost')
     // TODO other name when SPA? l
     else
-      zeroconfPlugin.getHostname(
+      plugin.getHostname(
         hostName => resolve(hostName),
         (error: unknown) => reject(error)
       )
@@ -79,10 +85,11 @@ export const register = (
   txtRecord: Record<string, string>
 ) =>
   new Promise<ServiceResult>((resolve, reject) => {
-    if (!zeroconfPlugin)
+    const plugin = getPlugin()
+    if (!plugin)
       reject('Zeroconf service registration only works with Cordova.')
     else
-      zeroconfPlugin.register(
+      plugin.register(
         type,
         domain,
         name,
@@ -97,8 +104,9 @@ export const watch = (
   eventHandler: ServiceEventCallback,
   type: string = DEFAULT_TYPE
 ) => {
-  if (zeroconfPlugin) {
-    zeroconfPlugin.watch(type, DEFAULT_DOMAIN, eventHandler, (error: unknown) =>
+  const plugin = getPlugin()
+  if (plugin) {
+    plugin.watch(type, DEFAULT_DOMAIN, eventHandler, (error: unknown) =>
       console.log('Error watching the zeroconf services' + error)
     )
   }
@@ -106,9 +114,10 @@ export const watch = (
 
 export const unwatch = (type: string = DEFAULT_TYPE) =>
   new Promise<void>((resolve, reject) => {
-    if (!zeroconfPlugin) resolve()
+    const plugin = getPlugin()
+    if (!plugin) resolve()
     else
-      zeroconfPlugin.unwatch(
+      plugin.unwatch(
         type,
         DEFAULT_DOMAIN,
         () => resolve(),

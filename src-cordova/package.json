@@ -20,6 +20,7 @@
     "cordova-plugin-console": "^1.1.0",
     "cordova-plugin-device": "^2.0.3",
     "cordova-plugin-zeroconf": "^1.4.2",
+    "cordova.plugins.diagnostic": "^5.0.2",
     "nodejs-mobile-cordova": "^0.4.1"
   },
   "devDependencies": {
@@ -33,7 +34,10 @@
       "cordova-plugin-zeroconf": {},
       "cordova-custom-config": {},
       "cordova-plugin-android-permissions": {},
-      "nodejs-mobile-cordova": {}
+      "nodejs-mobile-cordova": {},
+      "cordova.plugins.diagnostic": {
+        "ANDROID_SUPPORT_VERSION": "28.+"
+      }
     },
     "platforms": [
       "android"

@@ -1,7 +1,7 @@
 <template lang="pug">
   q-page
-    q-spinner(v-if="embedded && !ready && starting" color="primary" size="3em")
-    q-card(v-if="canBrowse" flat bordered)
+    q-spinner(v-if="starting" color="primary" size="3em")
+    q-card(v-if="embedded" flat bordered)
       q-card-section.text-h6 Connected devices
       q-card-section
         q-list(bordered separator)
@@ -32,7 +32,6 @@ export default defineComponent({
   setup(_, { root: { $store, $q } }) {
     const servers = computed(() => $store.getters['chat/servers'])
     const embedded = computed(() => $store.getters['server/embedded'])
-    const canBrowse = !!$q.platform.is.cordova
     const starting = computed(() => $store.getters['server/starting'])
     const ready = computed(() => $store.getters['server/ready'])
     // const apkUrl = computed(
@@ -48,7 +47,6 @@ export default defineComponent({
     return {
       // apkUrl,
       embedded,
-      canBrowse,
       servers,
       starting,
       ready,
