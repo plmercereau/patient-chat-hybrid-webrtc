@@ -6,14 +6,17 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, watch } from '@vue/composition-api'
-import { PeerServer } from './common/types'
 import { checkPermissions } from './common'
 
 export default defineComponent({
   name: 'App',
-  setup(_, { root: { $router, $store } }) {
+  setup(_, { root: { $router, $store, $q } }) {
     onMounted(() => {
       checkPermissions().then(() => {
+        if ($store.getters['server/embedded'])
+          $q.loading.show({
+            message: 'Starting the server...'
+          })
         $store.dispatch('chat/load')
       })
 
@@ -21,22 +24,17 @@ export default defineComponent({
       watch(
         () => $store.getters['chat/ongoing'],
         (ongoing: boolean) => {
-          if (ongoing && $router.currentRoute.path !== '/chat')
-            $router.push('/chat')
-        }
-      )
-
-      // * When a server was initially set, but goes to null, it means a call ended (disconnection)
-      // * As a consequence, go back to the main page, and reset the PeerJS client to the local server
-      watch(
-        () => $store.getters['chat/server'],
-        (newServer: PeerServer | null, oldServer: PeerServer | null) => {
-          if (!newServer && !!oldServer) {
-            console.log('')
-            $store.dispatch('chat/localConnect')
+          if (ongoing) {
+            if ($router.currentRoute.path !== '/chat') $router.push('/chat')
+          } else {
             if ($router.currentRoute.path !== '/') $router.push('/')
           }
         }
+      )
+
+      watch(
+        () => $store.getters['server/ready'],
+        (ready: boolean) => ready && $q.loading.hide()
       )
     })
   }

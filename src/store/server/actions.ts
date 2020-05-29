@@ -10,16 +10,25 @@ import {
 } from 'src/common'
 
 export const actions: ActionTree<State, {}> = {
-  start: async ({ getters, commit }) => {
+  start: async ({ getters, commit, dispatch }) => {
+    console.log('server/start')
     const hostName = await getHostName()
     commit('setHostName', hostName)
     // ? check is server is not already up and running ?
     if (getters['embedded']) {
       commit('starting')
-      await startServer()
+      try {
+        await startServer()
+      } catch {
+        // TODO most likely the server already started
+        dispatch('ready')
+      }
+    } else {
+      dispatch('ready')
     }
   },
-  ready: async ({ getters, commit }) => {
+  ready: async ({ getters, commit, dispatch }) => {
+    console.log('server/ready')
     if (getters['embedded']) {
       try {
         // TODO move to Express
@@ -44,6 +53,7 @@ export const actions: ActionTree<State, {}> = {
       })
     ) {
       commit('ready')
+      dispatch('chat/connect', undefined, { root: true })
     } else {
       console.error('Local server is not available') // TODO what then?
     }

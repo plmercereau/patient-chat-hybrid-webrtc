@@ -24,20 +24,20 @@
 </template>
 
 <script>
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, computed } from '@vue/composition-api'
 
 export default defineComponent({
   name: 'MainLayout',
-  setup() {
+  setup(_, { root: { $store } }) {
     // const leftDrawerOpen = ref(false)
-    // const userName = computed(() => $store.getters['chat/userName'])
+    const userName = computed(() => $store.getters['chat/userName'])
     // // const ongoing = computed(() => $store.getters['chat/ongoing'])
 
     // const toggleDrawer = () => {
     //   leftDrawerOpen.value = !leftDrawerOpen.value
     // }
     // return { leftDrawerOpen, userName, ongoing, toggleDrawer }
-    return {}
+    return { userName }
   }
 })
 </script>

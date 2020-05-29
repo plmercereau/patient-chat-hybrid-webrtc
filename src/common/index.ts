@@ -1,4 +1,4 @@
-export { checkServer, SERVICE_PORT, SERVICE_NAME } from './server'
+export { checkServer, serverPath, SERVICE_PORT, SERVICE_NAME } from './server'
 export { startServer } from './express'
 export { devicePlugin } from './device'
 export {

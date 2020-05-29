@@ -45,20 +45,20 @@ export const setCallConnection = (conn: Peer.MediaConnection) => {
 }
 
 export const setCall = (call: Peer.MediaConnection): void => {
-  console.log('Set call')
   setCallConnection(call)
 
   call.on('stream', stream => {
     // TODO why is it called twice?
-    console.log('stream')
+    console.log('call: on stream')
     setRemoteStream(stream)
     store.commit('chat/startCall')
   })
   // Handle when the call finishes
   call.on('close', () => {
-    // alert('The videocall has finished')
-    console.log('The videocall has finished')
-    store.dispatch('chat/disconnect')
+    console.log('call: on close')
     setRemoteStream(null)
+    if (!store.getters['local']) {
+      store.dispatch('chat/connect')
+    }
   })
 }

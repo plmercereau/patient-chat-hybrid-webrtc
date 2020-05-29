@@ -9,6 +9,7 @@ cordova.channel.send('main.js loaded')
 
 try {
   server(3000, () => {
+    log('Express server is ready')
     cordova.channel.post('ready')
   })
 } catch (error) {

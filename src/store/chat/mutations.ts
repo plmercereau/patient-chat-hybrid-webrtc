@@ -4,7 +4,7 @@ import { PeerServer } from 'src/common/types'
 // import { LocalStorage } from 'quasar'
 
 export const mutations: MutationTree<State> = {
-  setServer(state, server: PeerServer) {
+  setServer(state, server: PeerServer | null) {
     state.server = server
     // LocalStorage.set('server', server)
   },
@@ -15,11 +15,10 @@ export const mutations: MutationTree<State> = {
   setUserName: (state, userName: string) => {
     state.userName = userName
   },
-  setRemoteUser: (state, userName: string) => {
+  setRemoteUser: (state, userName?: string) => {
     state.remoteUserName = userName
   },
   ready: state => {
-    console.log('ready')
     state.ready = true
   },
   connect: state => {
@@ -34,5 +33,6 @@ export const mutations: MutationTree<State> = {
   },
   endCall: state => {
     state.ongoing = false
+    state.remoteUserName = undefined
   }
 }

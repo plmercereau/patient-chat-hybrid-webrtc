@@ -17,6 +17,7 @@ export const startServer = () =>
     if (!nodejs) resolve()
     else {
       nodejs.channel.on('ready', () => {
+        console.log('"ready" event received. Dispatching to the store...')
         store.dispatch('server/ready')
       })
       nodejs.start('main.js', err => {

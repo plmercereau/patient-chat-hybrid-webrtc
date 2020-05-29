@@ -9,7 +9,7 @@ import axios from 'axios'
 
 export const actions: ActionTree<State, {}> = {
   load: async ({ dispatch, commit, rootGetters, getters }) => {
-    console.log('load')
+    console.log('chat/load')
     await dispatch('server/start', undefined, { root: true })
 
     const hostName = rootGetters['server/hostName']
@@ -25,14 +25,12 @@ export const actions: ActionTree<State, {}> = {
       )
     }
 
-    // * Connect to local peer server
-    await dispatch('localConnect')
     dispatch('watchServers')
   },
   selectFirstUp: () => {
     // TODO Finish this
     // let watching = true
-    console.log('SELECT FIRST UP')
+    console.log('chat/selectFirstUp')
     watch(result => {
       console.log(result) // TODO remove!!
       // TODO check if the result is a chat service. If it is, commit the server and stop watching (watching = false + unwatch)
@@ -56,8 +54,10 @@ export const actions: ActionTree<State, {}> = {
     // }, 5000)
   },
   // ? add 'unwatch' as well ?
+  // TODO watch any event and update existing records
   watchServers: ({ commit, rootGetters }) => {
     watch(({ action, service }) => {
+      console.log(action)
       if (
         action === 'resolved' &&
         isValid(service) &&
@@ -73,15 +73,8 @@ export const actions: ActionTree<State, {}> = {
     })
   },
 
-  // * Connect to the local PeerJS server
-  localConnect: async ({ dispatch, getters }) => {
-    console.log('start local')
-    if (!getters['local']) {
-      await dispatch('connect')
-    }
-  },
-
   call: async ({ commit, getters }) => {
+    console.log('chat/call')
     try {
       const { data }: { data: string[] } = await axios.get(
         `${getters['url']}/peerjs/peers`
@@ -100,25 +93,30 @@ export const actions: ActionTree<State, {}> = {
   },
 
   endCall: ({ commit }) => {
+    console.log('chat/endCall')
     stopCamera()
     const connection = getCallConnection()
     if (connection && connection.open) connection.close()
     commit('endCall')
   },
 
-  // * Disconnect from the current PeerJS server
-  disconnect: ({ commit, dispatch }) => {
+  close: ({ dispatch, commit, getters }) => {
+    console.log('chat/close')
     dispatch('endCall')
-    const peer = getPeer()
-    if (peer) peer.disconnect()
     commit('disconnect')
+    if (!getters['local']) {
+      const peer = getPeer()
+      if (peer) peer.destroy()
+    }
   },
-
   // * Connect to the given PeerJS server, or the local server if none given
   connect: async (
     { state, commit, dispatch, getters },
     newServer?: PeerServer
   ) => {
+    console.log('chat/connect')
+    dispatch('close')
+
     const local = !newServer
     if (!newServer)
       newServer = {
@@ -128,32 +126,28 @@ export const actions: ActionTree<State, {}> = {
         secure: false
       }
 
-    const currentServer = getters['server']
-    if (currentServer && currentServer.host !== newServer.host) {
-      dispatch('disconnect')
-    }
-
     const peer = createPeer(newServer)
 
     peer.on('open', () => {
-      console.log('open')
+      console.log('peer: on open')
       commit('setUserName', peer.id)
       commit('ready')
     })
 
     peer.on('connection', connection => {
       // ? Not really used until now. We'll maybe need to implement this for adequate 'disconnection' event
-      console.log('peer connection')
+      console.log('peer: on connection')
       commit('setRemoteUser', connection.peer)
       commit('connect')
     })
 
     peer.on('error', err => {
+      console.log('peer: on error')
       console.error('An error ocurred with peer: ' + err)
     })
 
     peer.on('call', call => {
-      console.log('Call from a peer')
+      console.log('peer: on call')
       // var acceptsCall = confirm(
       //   'Videocall incoming, do you want to accept it ?'
       // )
@@ -168,8 +162,12 @@ export const actions: ActionTree<State, {}> = {
       }
     })
 
-    peer.on('disconnected', () => {
-      dispatch('disconnect')
+    // peer.on('disconnect', () => {
+    //   console.log('peer: on disconnect')
+    // })
+
+    peer.on('close', () => {
+      console.log('peer: on close. Do nothing.')
     })
 
     if (!local && state.autoCall) {

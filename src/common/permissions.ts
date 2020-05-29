@@ -2,10 +2,7 @@ import { Platform } from 'quasar'
 
 const checkPermission = (permission: string) =>
   new Promise((resolve, reject) => {
-    if (
-      Platform.is.cordova &&
-      cordova.plugins.diagnostic?.requestRuntimePermission
-    ) {
+    if (cordova.plugins.diagnostic?.requestRuntimePermission) {
       cordova.plugins.diagnostic?.requestRuntimePermission(
         status => {
           switch (status) {
@@ -42,18 +39,20 @@ const checkPermission = (permission: string) =>
   })
 
 export const checkPermissions = async () => {
-  await checkPermission(cordova.plugins.diagnostic.permission.CAMERA)
-  await checkPermission(cordova.plugins.diagnostic.permission.RECORD_AUDIO)
-  await checkPermission(
-    cordova.plugins.diagnostic.permission.READ_EXTERNAL_STORAGE
-  )
-  cordova.plugins.diagnostic.isWifiAvailable &&
-    cordova.plugins.diagnostic.isWifiAvailable(
-      res => {
-        console.log('wifi avaiabilitiy: ' + res)
-      },
-      () => {
-        console.log('Error in checking WIFI')
-      }
+  if (Platform.is.cordova) {
+    await checkPermission(cordova.plugins.diagnostic.permission.CAMERA)
+    await checkPermission(cordova.plugins.diagnostic.permission.RECORD_AUDIO)
+    await checkPermission(
+      cordova.plugins.diagnostic.permission.READ_EXTERNAL_STORAGE
     )
+  }
+  // cordova.plugins.diagnostic.isWifiAvailable &&
+  //   cordova.plugins.diagnostic.isWifiAvailable(
+  //     res => {
+  //       console.log('wifi avaiabilitiy: ' + res)
+  //     },
+  //     () => {
+  //       console.log('Error in checking WIFI')
+  //     }
+  //   )
 }

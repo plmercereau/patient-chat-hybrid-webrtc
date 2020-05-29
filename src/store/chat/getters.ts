@@ -1,6 +1,6 @@
 import { GetterTree } from 'vuex'
 import { State } from './state'
-import { serverPath } from 'src/common/server'
+import { serverPath } from 'src/common'
 
 export const getters: GetterTree<State, {}> = {
   server: state => state.server,

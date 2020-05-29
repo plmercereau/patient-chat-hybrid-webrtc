@@ -4,7 +4,7 @@
       q-card.text-center(v-if="ready && !ongoing && !local")
         q-card-section.text-h6
           div {{remoteId}}
-          q-btn.col-6(v-if="!ongoing" @click="call") Call
+          //- q-btn.col-6(v-if="!ongoing" @click="call") Call
       q-card.col-12.text-center
         video(v-if="ongoing" :srcObject.prop="remoteStream" autoplay controls)
         video.local(v-else :srcObject.prop="localStream" preload="true" :muted="!ongoing" autoplay)
@@ -38,8 +38,8 @@ export default defineComponent({
     const localStream = ref<MediaStream | null>(getLocalStream())
     const remoteStream = computed(() => ongoing.value && getRemoteStream())
 
-    const call = () => $store.dispatch('chat/call')
-    const end = () => $store.dispatch('chat/disconnect')
+    // const call = () => $store.dispatch('chat/call')
+    const end = () => $store.dispatch('chat/close')
 
     watch(
       () => $store.getters['chat/ready'],
@@ -54,7 +54,7 @@ export default defineComponent({
     return {
       ready,
       ongoing,
-      call,
+      // call,
       end,
       local,
       localStream,
