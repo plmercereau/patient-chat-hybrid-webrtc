@@ -110,10 +110,7 @@ export const actions: ActionTree<State, {}> = {
     }
   },
   // * Connect to the given PeerJS server, or the local server if none given
-  connect: async (
-    { state, commit, dispatch, getters },
-    newServer?: PeerServer
-  ) => {
+  connect: async ({ state, commit, dispatch }, newServer?: PeerServer) => {
     console.log('chat/connect')
     dispatch('close')
 
@@ -152,8 +149,8 @@ export const actions: ActionTree<State, {}> = {
       //   'Videocall incoming, do you want to accept it ?'
       // )
       if (state.autoAnswer) {
-        startCamera().then(stream => {
-          call.answer(stream)
+        startCamera().then(localStream => {
+          call.answer(localStream)
           commit('setRemoteUser', call.peer)
           setCall(call)
         }) // TODO

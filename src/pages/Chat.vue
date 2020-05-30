@@ -1,29 +1,21 @@
 <template lang="pug">
   q-page.q-pa-md
-    div.row.justify-center.items-start.q-gutter-md
-      q-card.text-center(v-if="ready && !ongoing && !local")
-        q-card-section.text-h6
-          div {{remoteId}}
-          //- q-btn.col-6(v-if="!ongoing" @click="call") Call
+    div.row.justify-center.items-start.q-gutter-md(v-if="ongoing")
       q-card.col-12.text-center
-        video(v-if="ongoing" :srcObject.prop="remoteStream" autoplay controls)
-        video.local(v-else :srcObject.prop="localStream" preload="true" :muted="!ongoing" autoplay)
-        q-card-section.text-h6
-          div(v-if="ongoing") {{remoteId}}
-          div(v-else-if="local") You
-        q-card-section(v-if="ongoing")
+        video(:srcObject.prop="remoteStream" autoplay controls)
+        q-card-section.text-h6 {{remoteId}}
+        q-card-section
           q-btn.col-6(@click="end") End call
-      q-card.col-4.text-center(v-if="ongoing")
-        video.local(:srcObject.prop="localStream" preload="true" :muted="ongoing" autoplay)
+      //- q-card.col-4.text-center
+        video.local(ref="localVideo" :srcObject.prop="localStream" autoplay muted="muted" onloadedmetadata="this.muted = true")
         q-card-section.text-h6 You
 
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, watch, ref } from '@vue/composition-api'
+import { defineComponent, computed, ref, watch } from '@vue/composition-api'
 
 import { getLocalStream, getRemoteStream } from 'src/store/peer'
-import { startCamera } from 'src/common'
 
 export default defineComponent({
   name: 'PageChat',
@@ -32,32 +24,37 @@ export default defineComponent({
     const remoteId = computed<string>(
       () => $store.getters['chat/remoteUserName']
     )
+    const localVideo = ref<HTMLVideoElement>({})
+    const remoteStream = ref<MediaStream>(null)
+    const localStream = ref<MediaStream>(null)
+
     const ready = computed<boolean>(() => $store.getters['chat/ready'])
+
     const ongoing = computed<boolean>(() => $store.getters['chat/ongoing'])
 
-    const localStream = ref<MediaStream | null>(getLocalStream())
-    const remoteStream = computed(() => ongoing.value && getRemoteStream())
-
-    // const call = () => $store.dispatch('chat/call')
-    const end = () => $store.dispatch('chat/close')
-
     watch(
-      () => $store.getters['chat/ready'],
-      (ready: boolean) => {
-        if (ready && !localStream.value)
-          startCamera().then(stream => {
-            localStream.value = stream
-          })
+      () => $store.getters['chat/ongoing'],
+      (ongoing: boolean) => {
+        if (ongoing) {
+          localVideo.value.autoplay = true
+          localVideo.value.muted = true
+          localVideo.value.volume = 0
+          // localVideo.value.srcObject = getLocalStream()
+          remoteStream.value = getRemoteStream()
+          localStream.value = getLocalStream()
+        }
       }
     )
 
+    const end = () => $store.dispatch('chat/close')
+
     return {
+      localVideo,
+      localStream,
       ready,
       ongoing,
-      // call,
       end,
       local,
-      localStream,
       remoteId,
       remoteStream
     }
