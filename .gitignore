@@ -4,7 +4,7 @@ node_modules
 
 # Quasar core related directories
 .quasar
-/dist
+# /dist
 
 # Cordova related directories and files
 /src-cordova/node_modules
@@ -36,6 +36,7 @@ yarn-error.log*
 *.keystore
 
 # APK
-*.apk
+# *.apk
 
 temp
+dist/**/logs
