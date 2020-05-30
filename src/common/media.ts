@@ -1,19 +1,22 @@
 // import { permissionsPlugin } from 'src/common'
-import { setLocalStream, getLocalStream } from 'src/store/peer'
+import { getLocalStream, setLocalStream } from 'src/store/peer'
 
 // ? Move elsewhere?
 export const startCamera = async () => {
   if (navigator.mediaDevices) {
     const media = await navigator.mediaDevices.getUserMedia({
-      audio: true,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true
+        // autoGainControl: true,
+      },
       video: {
         facingMode: 'user', // 'environment'
-        echoCancellation: true,
-        noiseSuppression: true,
         width: { ideal: 320 },
         height: { ideal: 240 }
       }
     })
+    console.log('camera started')
     setLocalStream(media)
     return media
   } else {
