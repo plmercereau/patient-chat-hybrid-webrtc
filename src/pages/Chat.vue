@@ -6,7 +6,7 @@
         q-card-section.text-h6 {{remoteId}}
         q-card-section
           q-btn.col-6(@click="end") End call
-      //- q-card.col-4.text-center
+      q-card.col-4.text-center
         video.local(ref="localVideo" :srcObject.prop="localStream" autoplay muted="muted" onloadedmetadata="this.muted = true")
         q-card-section.text-h6 You
 
