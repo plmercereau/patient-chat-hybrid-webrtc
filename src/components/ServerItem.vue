@@ -102,14 +102,3 @@ export default defineComponent({
   }
 })
 </script>
-<style scoped>
-video {
-  /* override other styles to make responsive */
-  width: 100% !important;
-  height: auto !important;
-}
-video.local {
-  -webkit-transform: scaleX(-1);
-  transform: scaleX(-1);
-}
-</style>
