@@ -139,14 +139,15 @@ quasar build
 ### Prototype
 
 - [ ] Pick the right permissions
-- [ ] Prompt Android permissions
+- [x] Prompt Android permissions
 - [x] hide own local server from the list of servers
-- [ ] build a "stable" apk to test between devices and share with the team
+- [x] build a "stable" apk to test between devices and share with the team
 - [ ] Double check if server works correclty in background. Seems ok.
   - [nodejs plugin side](https://github.com/JaneaSystems/nodejs-mobile/issues/104) and [a dedicated plugin](https://github.com/katzer/cordova-plugin-background-mode).
 
 ### Strengthening
 
+- [ ] fix this damn latency/echo thing!!!
 - [ ] improve disconnection UX: send a 'end call' event, instead of waiting for the connection to be lost
 - [ ] change the server port from 3000 to something else
 - [ ] "calling" spinner
